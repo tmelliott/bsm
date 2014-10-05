@@ -1,0 +1,13 @@
+Package: BSM
+Type: Package
+Title: Bayesian Selectivity Modelling of Fisheries Trawl Data
+Version: 1.0
+Date: 2014-07-15
+Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
+    email = "tell029@aucklanduni.ac.nz"))
+Description: Fit selectivity curves to fisheries trawl data using Bayesian
+    models, and estimate parameters such as L50 and SR.
+License: GPL-2
+Imports:
+    R2jags,
+    coda
