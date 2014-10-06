@@ -147,6 +147,9 @@ makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE,
         ## mAdd(jagsprior("tau_od", priors$tau_od, 2))
         mAdd(randomeffectVar("od", 2))
     }
+
+    ## Do the weights thingy....
+    
     
     
     mAdd("}")
