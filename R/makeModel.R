@@ -7,6 +7,8 @@
 ##' (will likely allow other options, for example "Bspline", future)
 ##' @param check.od logical, if \code{TRUE}, then overdispersion estimates will be produced
 ##' @param od logical, if \code{TRUE}, the model will be fit allowing for overdispersion
+##' @param pred.check logical, if \code{TRUE}, then random observations will be drawn from the
+##' posterior predictive distribution.
 ##' @param combine logical, if \code{TRUE}, then the "combined hauls" approach is used, otherwise a
 ##' hierarchical approach is used.
 ##' @param random vector of parameters to have hierarchical or random effects
@@ -25,12 +27,18 @@
 ##' @author Tom Elliott
 ##' @export
 makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE, od = FALSE,
+                      pred.check = FALSE,
                       combine = is.null(random), random = NULL, L50 = NULL, SR = NULL, phi = NULL,
                       delta = NULL, priors = NULL, length.dist = "iid", paired,
                       file = tempfile(), ...) {
     ##### ----- Some initial text at the top .....
     if (is.null(file)) file <- tempfile() else unlink(file)
     model.file <- file(file, open = "w")
+
+    if (pred.check & family != "binomial") {
+        warning("Posterior predictive checks only implemented for binomial likelihood.")
+        pred.check <- FALSE
+    }
 
     mAdd <- function(...)
         cat(..., "\n", sep = "", file = model.file, append = TRUE)
@@ -49,6 +57,8 @@ makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE,
     mAdd("    for (j in 1:M) {")
     mAdd("      ## The likelihood on the observed counts:")
     mAdd(lhood(family, od, 6))
+    if (pred.check)
+        mAdd(lhoodrep(family, od, 6))
     mAdd("      ")
 
     ## Make decisions on the "form" of L50 and SR (and delta)
@@ -63,7 +73,15 @@ makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE,
     hphi <- "mu_phi"
     
     mAdd("      ## The implementation of the selection curve:")
-    mAdd(selectCurve(family, curve, paired, fL50, fSR, fdelta, fphi, od, indent = 6))
+    mAdd(selectCurve(family, curve, paired, fL50, fSR, fdelta, fphi, od, ext = "", indent = 6))
+    if (pred.check) {
+        fL50s <- "L50rep[j]"
+        fSRs <- "SRrep[j]"
+        fdeltas <- if (curve == "richards") "deltarep[j]" else ""
+        fphis <- ifelse(paired, "phirep[j]", "")
+        mAdd("  ")
+        mAdd(selectCurve(family, curve, paired, fL50s, fSRs, fdeltas, fphis, od, ext = "rep", indent = 6))
+    }
     mAdd("    }")
     mAdd("  }")
 
@@ -76,6 +94,16 @@ makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE,
         mAdd(parFormula("delta", delta, random, indent = 4))
     if (paired)
         mAdd(parFormula("phi", phi, random, transform = "ilogit", indent = 4))
+
+    if (pred.check) {
+        mAdd("  ")
+        mAdd(parFormula("L50", L50, random, ext = "rep", indent = 4))
+        mAdd(parFormula("SR", SR, random, ext = "rep", indent = 4))
+        if (curve == "richards")
+            mAdd(parFormula("delta", delta, random, ext = "rep", indent = 4))
+        if (paired)
+            mAdd(parFormula("phi", phi, random, transform = "ilogit", ext = "rep", indent = 4))
+    }
     mAdd("  }")
     mAdd("  ")
 
@@ -148,13 +176,7 @@ makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE,
         mAdd(randomeffectVar("od", 2))
     }
 
-    ## Do the weights thingy....
-    
-    
-    
     mAdd("}")
-
-    
 
     ##### ----- Close the connection to the file ...
     close(model.file)
@@ -183,7 +205,7 @@ randomeffectVar <- function(par, indent) {
         )
 }
 
-parFormula <- function(par, mat, random, transform = NULL, indent) {
+parFormula <- function(par, mat, random, transform = NULL, ext = "", indent) {
     ind <- paste(rep(" ", indent), collapse = "")
 
     fmla <- paste0(" <- mu_", par,
@@ -205,21 +227,25 @@ parFormula <- function(par, mat, random, transform = NULL, indent) {
         paste0(
             if (trans) {
                 paste0(ind,
-                       par, "[j] <- ", transform, "(", pp, "[j])\n")
+                       par, ext, "[j] <- ", transform, "(", pp, ext, "[j])\n")
             } else "",
             ind,
-            pp, "[j] ~ dnorm(", par, "_bar[j], tau_", par, ")\n",            
-            ind,
-            par, "_bar[j]", fmla
+            pp, ext, "[j] ~ dnorm(", par, "_bar[j], tau_", par, ")",
+            if (ext == "") {
+                paste0("\n", ind,
+                       par, "_bar[j]", fmla)
+            } else ""
             )
     } else {
         paste0(
             if (trans) {
                 paste0(ind,
-                       par, "[j] <- ", transform, "(", pp, "[j])\n")
+                       par, ext, "[j] <- ", transform, "(", pp, ext, "[j])")
             } else "",
-            ind,
-            pp, "[j]", fmla
+           # if (ext == "") {
+            paste0(ifelse(trans, "\n", ""), ind,
+                   pp, ext, "[j]", fmla)
+           # } else ""
             )
     }
 }
@@ -316,47 +342,49 @@ jagsprior <- function(par, dist, indent) {
     paste0(ind, par, " ~ ", dist)
 }
 
-selectCurve <- function(family, curve, paired, L50, SR, delta, phi, od, indent) {
+selectCurve <- function(family, curve, paired, L50, SR, delta, phi, od, ext, indent) {
     ind <- paste(rep(" ", indent), collapse = "")
-        switch(curve,
-               "logistic" = {
-                   paste0(
-                       ifelse(paired,
-                              paste0(
-                                  ind,
-                                  c(paste0("p[i, j] <- q1[j] * ", phi, " * r[i, j] /"),
-                                    paste0("        (q1[j] * ", phi, " * r[i, j] + q2[j] * (1 - ", phi, "))")),
-                                  "\n", collapse = ""),
-                              ""),
-                       paste0(
-                           ind,
-                           c(paste0(ifelse(paired, "r", "p"), "[i, j] <- ilogit(eta[i, j])"),
-                             ifelse(od & family == "binomial",
-                                    "eta[i, j] ~ dnorm(etahat[i, j], tau_od)",
-                                    "eta[i, j] <- etahat[i, j]"),
-                             paste0("etahat[i, j] <- 2 * log(3) / ", SR, " * (x[i] - ", L50, ")",
-                                    ifelse(family == "binomial" & !paired, " + log(q1[j] / q2[j])", ""))),
-                           collapse = "\n"
-                           )
-                       )
-               },
-               "richards" = {
+    
+    switch(curve,
+           "logistic" = {
+               paste0(
+                   ifelse(paired,
+                          paste0(
+                              ind,
+                              c(paste0("p", ext, "[i, j] <- q1[j] * ", phi, " * r", ext, "[i, j] /"),
+                                paste0("        (q1[j] * ", phi, " * r", ext,
+                                       "[i, j] + q2[j] * (1 - ", phi, "))")),
+                              "\n", collapse = ""),
+                          ""),
                    paste0(
                        ind,
-                       c(ifelse(family == "binomial",
-                                paste0("p[i, j] <- (q1[j]/q2[j]) * r[i, j] / (1 - (1 - q1[j]/q2[j]) * r[i, j])"),
-                                paste0("p[i, j] <- r[i, j]")),
-                         paste0("r[i, j] <- ilogit(eta[i, j]) ^ (1 / ", delta, ")"),
+                       c(paste0(ifelse(paired, "r", "p"), ext, "[i, j] <- ilogit(eta", ext, "[i, j])"),
                          ifelse(od & family == "binomial",
-                                "eta[i, j] ~ dnorm(etahat[i, j], tau_od)",
-                                "eta[i, j] <- etahat[i, j]"),
-                         paste0("etahat[i, j] <- (", delta, " * log(3) - log(4^", delta, " - 3^", delta,
-                                ") + \n", ind, "  log(4^", delta, " - 1)) / ", SR, " * (x[i] - ", L50, ") - log(2^",
-                                delta, " - 1)")),
+                                paste0("eta", ext, "[i, j] ~ dnorm(etahat", ext, "[i, j], tau_od)"),
+                                paste0("eta", ext, "[i, j] <- etahat", ext, "[i, j]")),
+                         paste0("etahat", ext, "[i, j] <- 2 * log(3) / ", SR,
+                                " * (x[i] - ", L50, ")",
+                                ifelse(family == "binomial" & !paired, " + log(q1[j] / q2[j])", ""))),
                        collapse = "\n"
                        )
-               })
-   # }
+                   )
+           },
+           "richards" = {
+               paste0(
+                   ind,
+                   c(ifelse(family == "binomial",
+                            paste0("p[i, j] <- (q1[j]/q2[j]) * r[i, j] / (1 - (1 - q1[j]/q2[j]) * r[i, j])"),
+                            paste0("p[i, j] <- r[i, j]")),
+                     paste0("r[i, j] <- ilogit(eta[i, j]) ^ (1 / ", delta, ")"),
+                     ifelse(od & family == "binomial",
+                            "eta[i, j] ~ dnorm(etahat[i, j], tau_od)",
+                            "eta[i, j] <- etahat[i, j]"),
+                     paste0("etahat[i, j] <- (", delta, " * log(3) - log(4^", delta, " - 3^", delta,
+                            ") + \n", ind, "  log(4^", delta, " - 1)) / ", SR, " * (x[i] - ", L50, ") - log(2^",
+                            delta, " - 1)")),
+                   collapse = "\n"
+                   )
+           })
 }
 
 
@@ -386,4 +414,14 @@ lhood <- function(family, od, indent) {
                    collapse = "\n"
                    )
            })
+}
+lhoodrep <- function(family, od, indent) {
+    ind <- paste(rep(" ", indent), collapse = "")
+    if (family != "binomial")
+        stop("Can only do PPC for binomial likelhood")
+
+    paste0(
+        ind,
+        "yrep[i, j] ~ dbin(prep[i, j], n[i, j])"
+        )
 }

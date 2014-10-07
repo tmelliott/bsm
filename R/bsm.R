@@ -10,6 +10,8 @@
 ##' (will likely allow other options, for example "Bspline", future)
 ##' @param check.od logical, if \code{TRUE}, then overdispersion estimates will be produced
 ##' @param od logical, if \code{TRUE}, the model will be fit allowing for overdispersion
+##' @param pred.check logical, if \code{TRUE}, then random observations will be drawn from the
+##' posterior predictive distribution.
 ##' @param combine logical, if \code{TRUE}, then the "combined hauls" approach is used, otherwise a
 ##' hierarchical approach is used.
 ##' @param random vector of parameters to have hierarchical or random effects
@@ -39,6 +41,7 @@
 ##' @author Tom Elliott
 ##' @export
 bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od = FALSE,
+                pred.check = FALSE,
                 combine = is.null(random), random = NULL, L50 = ~1, SR = ~1,
                 phi = if (attr(x, "paired")) ~1 else NULL,
                 delta = if (curve == "richards") ~1 else NULL,
@@ -92,11 +95,11 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
         deltades <- makeDesign(delta, as.data.frame(x))
     }
     
-    mod <- makeModel(family, curve, check.od, od, combine, random,
+    mod <- makeModel(family, curve, check.od, od, pred.check, combine, random,
                      L50des, SRdes, phides, deltades, priors, length.dist,
                      paired = attr(x, "paired"), file)
     dat <- makeData(x, family, combine, random, L50des, SRdes, phides, deltades)
-    par <- getPars(family, curve, check.od, od, combine, random,
+    par <- getPars(family, curve, check.od, od, pred.check, combine, random,
                    L50des, SRdes, phides, deltades, length.dist,
                    paired = attr(x, "paired"))
 
@@ -369,7 +372,7 @@ summary.bsmfit <- function(object, p.values = FALSE, ...) {
                                   m <- mean(x < 0)
                                   min(m, 1 - m)
                               })
-        
+    
     ## MCMC info
     out$mcmc <- with(x$fit$BUGSoutput,
                      list(
@@ -383,11 +386,10 @@ summary.bsmfit <- function(object, p.values = FALSE, ...) {
                          pD         = pD
                          ))
 
-    
-    
-    out$gelman <- coda::gelman.diag(as.mcmc(x))
-    out$geweke <- coda::geweke.diag(as.mcmc(x))
-    out$heidel <- coda::heidel.diag(as.mcmc(x))
+    mcmc <- as.mcmc(x)
+    out$gelman <- coda::gelman.diag(mcmc)
+    out$geweke <- coda::geweke.diag(mcmc)
+    out$heidel <- coda::heidel.diag(mcmc)
     
     class(out) <- "summary.bsmfit"
     out
@@ -584,8 +586,11 @@ predict.bsmfit <- function(object, sort = NULL, ...) {
 ##' @author Tom Elliott
 ##' @export
 as.mcmc.bsmfit <- function(x) {
-    drop <- c("p_od")
-    coda::as.mcmc(x$fit)[, c(x$all.parameters[!x$all.parameters %in% drop], "deviance")]
+    drop <- c("p_od", x$all.parameters[grep("yrep", x$all.parameters)])
+    mcmc <- coda::as.mcmc(x$fit)
+    mcmc <- mcmc[, !grepl("yrep", colnames(as.matrix(mcmc)))]
+    COLS <-  c(x$all.parameters[!x$all.parameters %in% drop], "deviance")
+    mcmc[, COLS]
 }
 
 

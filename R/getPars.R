@@ -7,6 +7,8 @@
 ##' (will likely allow other options, for example "Bspline", future)
 ##' @param check.od logical, if \code{TRUE}, then overdispersion estimates will be produced
 ##' @param od logical, if \code{TRUE}, the model will be fit allowing for overdispersion
+##' @param pred.check logical, if \code{TRUE}, then random observations will be drawn from the
+##' posterior predictive distribution.
 ##' @param combine logical, if \code{TRUE}, then the "combined hauls" approach is used, otherwise a
 ##' hierarchical approach is used.
 ##' @param random vector of parameters to have hierarchical or random effects
@@ -22,6 +24,7 @@
 ##' @author Tom Elliott
 ##' @export
 getPars <- function(family = "binomial", curve = "logistic", check.od = FALSE, od = FALSE,
+                    pred.check = FALSE,
                     combine = is.null(random), random = NULL, L50 = NULL, SR = NULL, phi = NULL,
                     delta = NULL, length.dist = "iid", paired = FALSE, ...) {
 
@@ -50,6 +53,8 @@ getPars <- function(family = "binomial", curve = "logistic", check.od = FALSE, o
         allpars <- c(allpars, "od_obs", "od_exp", "p_od")
     if (od)
         allpars <- c(allpars, "sig2_od")
+    if (pred.check & family == "binomial")
+        allpars <- c(allpars, "yrep")
 
     ## Extra covariates
     if (!is.null(L50))
@@ -69,7 +74,7 @@ getPars <- function(family = "binomial", curve = "logistic", check.od = FALSE, o
           "sig2_L50", "sig2_SR", "sig2_delta", "sig2_phi",
           "beta", "omega", "gamma", "zeta",
           "pi",
-          "od_obs", "od_exp", "p_od", "sig2_od")
+          "od_obs", "od_exp", "p_od", "sig2_od", "yrep")
     
     summary.pars <- all.summary.pars[all.summary.pars %in% allpars]
 
