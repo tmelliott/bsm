@@ -3,40 +3,67 @@
 ##' possible to suppress the running of the JAGS and simply output the model and data.
 ##'
 ##' There are going to be a lot of details ...
+##' 
 ##' @title Fit a Bayesian Selectivity Model
+##' 
 ##' @param x an object of class \code{bsmdata}, from the \code{bsmData} function
+##' 
 ##' @param family \code{"logistic"} (default) or \code{"poisson"}, the family for the likelihood
+##' 
 ##' @param curve \code{"logistic"} or \code{"richards"}, the type of selection curve to be fitted
 ##' (will likely allow other options, for example "Bspline", future)
+##' 
 ##' @param check.od logical, if \code{TRUE}, then overdispersion estimates will be produced
+##' 
 ##' @param od logical, if \code{TRUE}, the model will be fit allowing for overdispersion
-##' @param combine logical, if \code{TRUE}, then the "combined hauls" approach is used, otherwise a
+##' 
+##' @param combine logical, if \code{TRUE}, then the 'combined hauls' approach is used, otherwise a
 ##' hierarchical approach is used.
+##' 
 ##' @param random vector of parameters to have hierarchical or random effects
+##' 
 ##' @param L50 the formula for L50, default is L50 = ~1
+##' 
 ##' @param SR the formula for SR, default is SR = ~1
+##' 
 ##' @param phi the formula for phi, default is phi = ~1
+##' 
 ##' @param delta the formula for delta, default is delta = ~1
+##' 
 ##' @param priors the prior distributions for specified parameters. See details.
+##' 
 ##' @param inits initial values for parameters
-##' @param length.dist "iid" or "multinomial", the type of length distribution for the lambda
+##' 
+##' @param length.dist 'iid' or "multinomial", the type of length distribution for the lambda
 ##' parameters. See details for more information.
+##' 
 ##' @param parameters the parameters to save in the JAGS output. NOTE: only use this if you really
 ##' really only want these parameters - may cause errors in summary output and plots depending on
 ##' parameters selected.
+##' 
 ##' @param file the file name to save the JAGS model in. If \code{NULL}, then a temporary file is
 ##' created
+##' 
 ##' @param fit logical, if \code{TRUE} then the JAGS model is fit, otherwise only the model and data
 ##' are returned.
+##' 
 ##' @param n.samples the total number of samples to obtain (excludes burnin and thin)
+##' 
 ##' @param n.thin the thinning interval
+##' 
 ##' @param n.burn the burn in period
+##' 
 ##' @param n.chains the number of chains
+##' 
 ##' @param max.attempts the maximum number of times bsm will attempt to fit the JAGS model (often
 ##' due to bad initial values, the model cannot be initiated and fails)
+##' 
 ##' @param ... additional arguments
+##' 
 ##' @return an object of class \code{bsmfit}
+##' 
 ##' @author Tom Elliott
+##' 
 ##' @export
 bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od = FALSE,
                 combine = is.null(random), random = NULL, L50 = ~1, SR = ~1,
