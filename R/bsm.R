@@ -199,18 +199,11 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
 }
 
 
-
-##' Print method of \code{bsmfit} object.
-##'
-##' Not much yet...
-##' @title Print a bsmfit object
-##' @param x the result of a call to \code{bsm}
 ##' @param model logical, if \code{TRUE}, then the JAGS model is printed, otherwise summary
 ##' information is provided
-##' @param coda logical, if \code{TRUE}, then the summary from the \code{coda} package is used 
-##' @param ... additional parameters to \code{print.rjags}
-##' @return NULL
-##' @author Tom Elliott
+##' @param coda logical, if \code{TRUE}, then the summary from the \code{coda} package is used
+##' 
+##' @describeIn bsm Print the summary of the model, or the model code
 ##' @export
 print.bsmfit <- function(x, model = FALSE, coda = FALSE, ...) {
     if (model) {
@@ -233,15 +226,10 @@ print.bsmfit <- function(x, model = FALSE, coda = FALSE, ...) {
 }
 
 
-##' Summary information for \code{bsmfit} object
-##'
-##' Not much ...
-##' @title Summary for BSM Fit
 ##' @param object a fitted bsm object
 ##' @param p.values logical, include significance tests for parameters != 0?
-##' @param ... additional parameters
-##' @return NULL
-##' @author Tom Elliott
+##' 
+##' @describeIn bsm Generate summary output for a bsmfit object
 ##' @export
 summary.bsmfit <- function(object, p.values = FALSE, ...) {
     x <- object
@@ -421,14 +409,6 @@ summary.bsmfit <- function(object, p.values = FALSE, ...) {
 }
 
 
-##' .. content for description{} (no empty lines) ..
-##'
-##' .. content for details{} ..
-##' @title Print of the summary information
-##' @param x A BSM fit object
-##' @param ... extra arguments
-##' @return NULL
-##' @author Tom Elliott
 ##' @export
 print.summary.bsmfit <- function(x, ...) {
     cat("\n")
@@ -540,16 +520,22 @@ print.summary.bsmfit <- function(x, ...) {
 }
 
 
-
 ##' .. content for description{} (no empty lines) ..
 ##'
 ##' .. content for details{} ..
 ##' @title Predict parameter values for selection curve
-##' @param object summary of bsmfit
+##' @param object bsmfit or summary.bsmfit object
 ##' @param sort character vector of variables to sort by
 ##' @param ... extra arguments
 ##' @return matrix
 ##' @author Tom Elliott
+##' @export
+predict.bsmfit <- function(object, sort = NULL, ...) {
+    predict(summary(object), sort = sort, ...)
+}
+
+##' @method predict summary.bsmfit
+##' @rdname predict.bsmfit
 ##' @export
 predict.summary.bsmfit <- function(object, sort = NULL, ...) {
     df <- object$predict
@@ -560,14 +546,6 @@ predict.summary.bsmfit <- function(object, sort = NULL, ...) {
     df
 }
 
-##' .. content for description{} (no empty lines) ..
-##'
-##' .. content for details{} ..
-##' @title Print predicted parameter values for selection curve
-##' @param x bsm.predict object
-##' @param ... extra arguments
-##' @return NULL
-##' @author Tom Elliott
 ##' @export
 print.bsm.predict <- function(x, ...) {
     m <- do.call(cbind, lapply(colnames(x), function(i) {
@@ -582,33 +560,12 @@ print.bsm.predict <- function(x, ...) {
 
 
 
-##' .. content for description{} (no empty lines) ..
-##'
-##' .. content for details{} ..
-##' @title Predict parameter values for selection curve
-##' @param object bsmfit
-##' @param sort character vector of variables to sort by
-##' @param ... extra arguments
-##' @return matrix
-##' @author Tom Elliott
-##' @export
-predict.bsmfit <- function(object, sort = NULL, ...) {
-    predict(summary(object), sort = sort, ...)
-}
 
 
 
 
 
-##' Convert a bsmfit object into an MCMC list for analysis using the CODA package
-##'
-##' Simply converts the \code{bsmfit} object from \code{bsm} into an \code{mcmc.list} object. The
-##' result can then be used with the \code{CODA} package, specifically the function
-##' \code{codamenu()}.
-##' @title Convert BSMFit to MCMC 
-##' @param x bsmfit object
-##' @return MCMC list
-##' @author Tom Elliott
+
 ##' @export
 as.mcmc.bsmfit <- function(x) {
     drop <- c("p_od")
@@ -621,23 +578,16 @@ as.mcmc.bsmfit <- function(x) {
 ##'
 ##' Generic Method
 ##' @title Extract DIC Value
-##' @param x an object
+##' @param x an object, such as bsmfit 
 ##' @param ... extra arguments
-##' @return varies
-##' @author tell029
+##' @return the DIC summary information
+##' @author Tom Elliott
 ##' @export
 dic <- function(x, ...)
     UseMethod("dic")
 
 
-##' Extract the DIC value from the bsm.fit object
-##'
-##' Does what it says
-##' @title Get DIC Value
-##' @param x a bsm.fit object
-##' @param ... extra arguments
-##' @return list
-##' @author tell029
+##' @describeIn dic Extract the DIC information from the JAGS object
 ##' @export
 dic.bsmfit <- function(x, ...) {
     dd <- list(...)
@@ -656,14 +606,6 @@ dic.bsmfit <- function(x, ...) {
 }
 
 
-##' Print DIC information
-##'
-##' Prints the results of dic()
-##' @title Print DIC output
-##' @param x a dic.summary object
-##' @param ... extra arguments
-##' @return NULL
-##' @author tell029
 ##' @export
 print.dic.summary <- function(x, ...) {
     m <- do.call(rbind, x)

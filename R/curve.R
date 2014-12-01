@@ -83,8 +83,6 @@ richards <- function(x, L50, SR, delta = 1)
      log(4^delta - 1)) / SR * (x - L50) - log(2^delta - 1)
 
 
-
-
 ilogit <- function(x) {
     exp(x) / (1 + exp(x))
 }

@@ -1,11 +1,3 @@
-##' Makes a design matrix for given parameter.
-##'
-##' Not much to see here ...
-##' @title Make Design Matrix
-##' @param par the formula for the parameter
-##' @param dat the dataframe
-##' @return design matrix
-##' @author tell029
 makeDesign <- function(par, dat) {
     # par <- update.formula(par, ~. - 1)  # remove the intercept
     mf <- model.matrix(par, dat)[, -1, drop = FALSE]

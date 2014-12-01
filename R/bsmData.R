@@ -71,14 +71,8 @@ bsmData <- function(y1, y2, n, length, length.unit = NULL, haul, q1, q2, paired 
 
 
 
-##' A print method for \code{bsmdata} objects.
-##'
-##' Prints objects resulting from a call to \code{bsmData}. 
-##' @title Print bsmData Objectss
-##' @param x a bsmdata object
-##' @param ... additional arguments (ignored)
-##' @return NULL
-##' @author Tom Elliott
+##' @param x a bsmData object
+##' @describeIn bsmData Print information about the data object
 ##' @export
 print.bsmdata <-
     function(x, ...) {
@@ -93,53 +87,26 @@ print.bsmdata <-
         invisible(NULL)
     }
 
-##' Prints the head of a bsmdata object.
-##'
-##' @title Head of bsmdata.
-##' @param x bsm object
-##' @param ... extra arguments
-##' @return NULL
-##' @author Tom Elliott
+
 ##' @export head.bsmdata
 head.bsmdata <-
     function(x, ...) {
         print(head(as.data.frame(x)))
         invisible(NULL)
     }
-##' Prints the tail of a bsmdata object.
-##'
-##' @title Tail of bsmdata.
-##' @param x bsmdata object
-##' @param ... extra arguments
-##' @return NULL
-##' @author Tom Elliott
+
 ##' @export tail.bsmdata
 tail.bsmdata <-
     function(x, ...) {
         print(tail(as.data.frame(x)))
         invisible(NULL)
     }
-##' Convert a bsmdata object into a dataframe
-##'
-##' @title Convert to Data Frame
-##' @param x bsmdata object
-##' @param ... extra arguments
-##' @return NULL
-##' @author Tom Elliott
+
 ##' @export 
 as.data.frame.bsmdata <- function(x, ...) {
     do.call(data.frame, x)
 }
 
-
-##' Subset a bdmdata object
-##'
-##' @title Subset bsmData object
-##' @param x object
-##' @param i rows
-##' @param j columns
-##' @return subsetted object
-##' @author Tom Elliott
 ##' @export
 `[.bsmdata` <- function(x, i, j) {
     df <- `[.data.frame`(as.data.frame(x), i, j)

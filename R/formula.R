@@ -49,15 +49,9 @@ generateFormula <- function(par, expression, data, est, ...) {
 }
 
 
-##' .. content for description{} (no empty lines) ..
-##'
-##' .. content for details{} ..
-##' @title Print a BSM Formula
 ##' @param x object of class bsmFormula
 ##' @param use.values if \code{TRUE}, the parameter estimates are used
-##' @param ... extra args
-##' @return NULL
-##' @author Tom Elliott
+##' @describeIn generateFormula
 ##' @export
 print.bsmFormula <- function(x, use.values = FALSE, ...) {
     par    <- x$parameter

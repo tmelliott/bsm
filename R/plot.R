@@ -420,7 +420,3 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
     return(invisible(NULL))
 }
 
-
-#traceplot <- function(x, ...) {
-    
-#}
