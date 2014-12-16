@@ -58,6 +58,8 @@
 ##' @param max.attempts the maximum number of times bsm will attempt to fit the JAGS model (often
 ##' due to bad initial values, the model cannot be initiated and fails)
 ##' 
+##' @param quiet suppress all output messages from JAGS?
+##' 
 ##' @param ... additional arguments
 ##' 
 ##' @return an object of class \code{bsmfit}
@@ -72,7 +74,7 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
                 priors = NULL, inits = NULL, length.dist = "iid",
                 parameters = par$summary.parameters, file = NULL, fit = TRUE,
                 n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin, n.chains = 3,
-                max.attempts = 10, ...) {
+                max.attempts = 10, quiet = FALSE, ...) {
 
     if (class(x) != "bsmdata")
         stop("x must be a bsmdata object from the bsmData function")
@@ -158,10 +160,20 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
     out <- list()
     if (fit) {
         for (i in 1:max.attempts) {
-            j <- try(R2jags::jags(dat, final.inits, parameters, mod,
-                                  n.chains = n.chains, n.iter = n.burn + n.samples * n.thin,
-                                  n.burnin = n.burn, n.thin = n.thin),
-                     TRUE)
+            if (quiet)
+                capture.output(suppressMessages(
+                    j <- try(R2jags::jags(dat, final.inits, parameters, mod,
+                                          n.chains = n.chains, n.iter = n.burn + n.samples * n.thin,
+                                          n.burnin = n.burn, n.thin = n.thin),
+                             TRUE)),
+                               file = tempfile()
+                               )
+            else
+                j <- try(R2jags::jags(dat, final.inits, parameters, mod,
+                                      n.chains = n.chains, n.iter = n.burn + n.samples * n.thin,
+                                      n.burnin = n.burn, n.thin = n.thin),
+                         TRUE)
+            
             if (!inherits(j, "try-error"))
                 break
         }
