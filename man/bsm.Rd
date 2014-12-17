@@ -11,7 +11,7 @@ bsm(x, family = "binomial", curve = "logistic", check.od = TRUE,
   "richards") ~1 else NULL, priors = NULL, inits = NULL,
   length.dist = "iid", parameters = par$summary.parameters, file = NULL,
   fit = TRUE, n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin,
-  n.chains = 3, max.attempts = 10, ...)
+  n.chains = 3, max.attempts = 10, quiet = FALSE, ...)
 
 \method{print}{bsmfit}(x, model = FALSE, coda = FALSE, ...)
 
@@ -69,6 +69,8 @@ are returned.}
 
 \item{max.attempts}{the maximum number of times bsm will attempt to fit the JAGS model (often
 due to bad initial values, the model cannot be initiated and fails)}
+
+\item{quiet}{suppress all output messages from JAGS?}
 
 \item{...}{additional arguments}
 

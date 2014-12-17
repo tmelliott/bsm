@@ -17,8 +17,7 @@ makeDesign <- function(par, dat) {
             des[, i] <- des[, i, drop = FALSE] - mean(des[, i])
     }
     
-    
-    if (ncol(des) > 0)
+    if (all(dim(des)) > 0)
         des
     else
         NULL

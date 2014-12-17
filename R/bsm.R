@@ -88,6 +88,28 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
         priors <- c(priors, default.priors[!names(default.priors) %in% names(priors)])
     } else priors <- default.priors
 
+
+    if (combine) {
+        ## If we are to combine, we need to account for sampling fractions:
+        ## We will recreate 'x' to remove haul etc etc etc
+
+        df <- as.data.frame(x)
+        y1 <- df$y1 / df$q1
+        y2 <- df$y2 / df$q2
+
+        lens <- unique(df$length)
+
+        x <- bsmData(y1 = tapply(y1, df$length, sum),
+                     y2 = tapply(y2, df$length, sum),
+                     length = unique(df$length),
+                     length.unit = attr(x, "length.unit"),
+                     paired = attr(x, "paired"))
+
+        ## Can't check overdispersion ...?
+        check.od <- FALSE  # (for now ...)
+    }
+    
+    
     ## Check for "haul" in the design
 
     ## Create design matrices for parameters:

@@ -53,11 +53,24 @@ makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE,
     
 
     ##### ----- Now make that model!
+    if (combine) {
+        ## Need to do that stupid 0's trick:
+        mAdd("data {")
+        mAdd("  for (i in 1:N) { ")
+        mAdd("    for (j in 1:M) { ")
+        mAdd("      zeros[i, j] <- 0 ")
+        mAdd("    }")
+        mAdd("  } ")
+        mAdd("  C <- 10000  # constant to ensure z's are positive. ")
+        mAdd("} ")
+    }
+
+    
     mAdd("model {")
     mAdd("  for (i in 1:N) {")
     mAdd("    for (j in 1:M) {")
     mAdd("      ## The likelihood on the observed counts:")
-    mAdd(lhood(family, od, 6))
+    mAdd(lhood(family, od, combine, 6))
     mAdd("      ")
 
     ## Make decisions on the "form" of L50 and SR (and delta)
@@ -369,14 +382,26 @@ selectCurve <- function(family, curve, paired, L50, SR, delta, phi, od, indent) 
 }
 
 
-lhood <- function(family, od, indent) {
+lhood <- function(family, od, combine = FALSE, indent) {
     ind <- paste(rep(" ", indent), collapse = "")
     switch(family,
            "binomial" = {
-               paste0(
-                   ind,
-                   "y[i, j] ~ dbin(p[i, j], n[i, j])"
+               if (combine) {
+                   paste0(
+                       ind,
+                       c("zeros[i, j] ~ dpois(z[i, j])", 
+                         "logL[i, j] <- loggam(n[i, j] + 1) - loggam(n[i, j] - y[i, j] + 1) - ",
+                         "    loggam(y[i, j] + 1) + y[i, j] * log(p[i, j]) + ",
+                         "    (n[i, j] - y[i, j]) * log(1 - p[i, j])",
+                         "z[i, j] <- - logL[i, j] + C"),
+                       collapse = "\n"
+                       )
+               } else {
+                   paste0(
+                       ind,
+                       "y[i, j] ~ dbin(p[i, j], n[i, j])"
                    )
+               }
            },
            "poisson" = {
                paste0(
