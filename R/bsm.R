@@ -68,7 +68,7 @@
 ##' 
 ##' @export
 bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od = FALSE,
-                combine = is.null(random), random = NULL, L50 = ~1, SR = ~1,
+                combine = FALSE, random = NULL, L50 = ~1, SR = ~1,
                 phi = if (attr(x, "paired")) ~1 else NULL,
                 delta = if (curve == "richards") ~1 else NULL,
                 priors = NULL, inits = NULL, length.dist = "iid",
@@ -99,14 +99,14 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
 
         lens <- unique(df$length)
 
-        x <- bsmData(y1 = tapply(y1, df$length, sum),
-                     y2 = tapply(y2, df$length, sum),
+        x <- bsmData(y1 = round(tapply(y1, df$length, sum)),
+                     y2 = round(tapply(y2, df$length, sum)),
                      length = unique(df$length),
                      length.unit = attr(x, "length.unit"),
                      paired = attr(x, "paired"))
-
+        combine <- FALSE
         ## Can't check overdispersion ...?
-        check.od <- FALSE  # (for now ...)
+        ## check.od <- FALSE  # (for now ...)
     }
     
     
