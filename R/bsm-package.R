@@ -8,5 +8,6 @@
 ##' @author Tom Elliott
 ##' @docType package
 ##' @name BSM-Package
+##' @import R2jags
 ##' @importFrom coda as.mcmc
 NULL

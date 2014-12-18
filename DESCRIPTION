@@ -8,6 +8,7 @@ Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
 Description: Fit selectivity curves to fisheries trawl data using Bayesian
     models, and estimate parameters such as L50 and SR.
 License: GPL-2
+Depends:
+    R2jags
 Imports:
-    R2jags,
     coda
