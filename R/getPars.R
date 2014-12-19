@@ -14,6 +14,7 @@
 ##' @param SR the formula for SR, default is SR = ~haul
 ##' @param phi the formula for phi, default is phi = ~haul
 ##' @param delta the formula for delta, default is delta = ~1
+##' @param intercept intercept yes or no?
 ##' @param length.dist "iid" or "multinomial", the type of length distribution for the lambda
 ##' parameters. See details for more information.
 ##' @param paired whether or not the data are paired
@@ -23,15 +24,15 @@
 ##' @export
 getPars <- function(family = "binomial", curve = "logistic", check.od = FALSE, od = FALSE,
                     combine = is.null(random), random = NULL, L50 = NULL, SR = NULL, phi = NULL,
-                    delta = NULL, length.dist = "iid", paired = FALSE, ...) {
+                    delta = NULL, intercept, length.dist = "iid", paired = FALSE, ...) {
 
     allpars <- c()
     
     ## top level parameters:
-    allpars <- c(allpars, "mu_L50", "mu_SR")
-    if (curve == "richards")
+    allpars <- c(allpars, if (intercept["L50"]) "mu_L50", if (intercept["SR"]) "mu_SR")
+    if (curve == "richards" & intercept["delta"])
         allpars <- c(allpars, "mu_delta", "log_mu_delta")
-    if (paired)
+    if (paired & intercept["phi"])
         allpars <- c(allpars, "mu_phi")
 
     ## Random effects variances
@@ -60,8 +61,6 @@ getPars <- function(family = "binomial", curve = "logistic", check.od = FALSE, o
         allpars <- c(allpars, "omega")
     if (!is.null(delta))
         allpars <- c(allpars, "zeta")
-
-    
     
 
     all.summary.pars <-
@@ -70,6 +69,7 @@ getPars <- function(family = "binomial", curve = "logistic", check.od = FALSE, o
           "beta", "omega", "gamma", "zeta",
           "pi",
           "od_obs", "od_exp", "p_od", "sig2_od")
+    
     
     summary.pars <- all.summary.pars[all.summary.pars %in% allpars]
 

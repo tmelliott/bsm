@@ -22,13 +22,24 @@ generateFormula <- function(par, expression, data, est, ...) {
         strsplit(s, "[)]")[[1]][1]
     })
     names(levels) <- vars
+
+    parname <- paste0("mu_", par)
+    is.int <- parname %in% rownames(est)
+    int <- ifelse(is.int, est[parname, ], FALSE)
     
-    # drop "baseline"
-    levs <- lapply(levels, function(l) if (length(l) == 0) NULL else l[-1])
+    # drop "baseline" IF no intercept
+    levs <- lapply(levels, function(l)
+        if (length(l) == 0) {
+            NULL
+        } else if (is.int) {
+            l[-1]
+        } else {
+            l
+        })
+    
     levels <- lapply(levels, function(l) if (is.null(l)) 0 else l)
 
-    int <- est[parname <- paste0("mu_", par), ]
-
+    
     coef <- switch(par, "L50" = "beta", "SR" = "gamma",
                    "phi" = "omega", "delta" = "zeta")
 
@@ -78,7 +89,7 @@ print.bsmFormula <- function(x, use.values = FALSE, ...) {
     if (use.values) {
         txt <- paste0(par, " = ", int, " ", print.values)
     } else {
-        txt <- paste0(par, " = ", "mu_", par, " + ", print.coefs)
+        txt <- paste0(par, " = ", if (int != 0) paste0("mu_", par, " + "), print.coefs)
     }
 
     cat("  ", txt, "\n")
@@ -103,7 +114,8 @@ predictPar <- function(x, ...) {
     if ("haul" %in% colnames(mat))
         mat <- mat[, colnames(mat) != "haul"]
     
-    pred.mat <- cbind(df, mat %*% c(x$intercept, x$coef.vals))
+    pred.mat <- cbind(df, mat %*%
+                          c(if ("(Intercept)" %in% colnames(mat)) x$intercept, x$coef.vals))
     colnames(pred.mat) <- c(colnames(df), x$parameter)
 
     attr(pred.mat, "factor.names") <- colnames(pred.mat)

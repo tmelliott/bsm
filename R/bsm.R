@@ -114,12 +114,17 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
 
     ## Create design matrices for parameters:
     L50des <- SRdes <- phides <- deltades <- NULL
+    intercept <- structure(rep(TRUE, 4), .Names = c("L50", "SR", "phi", "delta"))
     if (!is.null(L50)) {
         if ("haul" %in% attr(terms(L50), "term.labels")) {
             if (!"L50" %in% random)
                 random <- c(random, "L50")
 
             L50 <- update.formula(L50, ~.-haul)
+        }
+        if (!attr(terms(L50), "intercept")) {
+            update.formula(L50, ~. + 1)
+            intercept["L50"] <- FALSE
         }
         L50des <- makeDesign(L50, as.data.frame(x))
     }
@@ -144,16 +149,18 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
     }
     
     mod <- makeModel(family, curve, check.od, od, combine, random,
-                     L50des, SRdes, phides, deltades, priors, length.dist,
+                     L50des, SRdes, phides, deltades, intercept, priors, length.dist,
                      paired = attr(x, "paired"), file)
     dat <- makeData(x, family, combine, random, L50des, SRdes, phides, deltades)
     par <- getPars(family, curve, check.od, od, combine, random,
-                   L50des, SRdes, phides, deltades, length.dist,
+                   L50des, SRdes, phides, deltades, intercept, length.dist,
                    paired = attr(x, "paired"))
 
     default.inits <- function()
-        list(mu_L50 = rnorm(1, median(dat$x), diff(range(dat$x))/2),
-             mu_SR = rlnorm(1, log(diff(range(dat$x))/3)))
+        list(if (intercept["L50"])
+                 mu_L50 = rnorm(1, median(dat$x), diff(range(dat$x))/2),
+             if (intercept["SR"])
+                 mu_SR = rlnorm(1, log(diff(range(dat$x))/3)))
 
     if (is.null(inits)) {
         final.inits <- default.inits
@@ -218,7 +225,7 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
     ord <- unlist(sapply(parameters, function(x) ordL[[x]]))
     ind <- unlist(indL, use.names = FALSE)[ord]
     indo <- ifelse(ind == 0, "", paste0("[", ind, "]"))
-    all.parameters <- paste0(pp[ord], indo)
+    all.parameters <- paste0(pp[ord], indo)  # THIS DOESNT WORK
     
     out <- c(out, list(data = dat, file = mod,
                        summary.parameters = parameters,

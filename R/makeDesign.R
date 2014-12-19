@@ -1,6 +1,8 @@
 makeDesign <- function(par, dat) {
-    # par <- update.formula(par, ~. - 1)  # remove the intercept
-    mf <- model.matrix(par, dat)[, -1, drop = FALSE]
+    #par <- update.formula(par, ~. - 1)  # remove the intercept
+    mf <- model.matrix(par, dat)#[, -1, drop = FALSE]
+    if ("(Intercept)" %in% colnames(mf))
+        mf <- mf[, -1, drop = FALSE]
     
     des <- as.matrix(mf[tapply(1:nrow(mf), dat$haul,
                                function(x) x[1]), colnames(mf) != "haul"])

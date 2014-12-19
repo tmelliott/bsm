@@ -14,6 +14,7 @@
 ##' @param SR the formula for SR, default is SR = ~haul
 ##' @param phi the formula for phi, default is phi = ~haul
 ##' @param delta the formula for delta, default is delta = ~1
+##' @param intercept indicates which parameters have intercepts 
 ##' @param priors the prior distributions for specified parameters. See details.
 ##' @param length.dist "iid" or "multinomial", the type of length distribution for the lambda
 ##' parameters. See details for more information.
@@ -26,7 +27,7 @@
 ##' @export
 makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE, od = FALSE,
                       combine = is.null(random), random = NULL, L50 = NULL, SR = NULL, phi = NULL,
-                      delta = NULL, priors = NULL, length.dist = "iid", paired,
+                      delta = NULL, intercept,priors = NULL, length.dist = "iid", paired,
                       file = tempfile(), ...) {
     ##### ----- Some initial text at the top .....
     if (is.null(file)) file <- tempfile() else unlink(file)
@@ -92,27 +93,30 @@ makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE,
     mAdd("  ")
     mAdd("  for (j in 1:M) {")
     mAdd("    ## Parameter values for each haul")
-    mAdd(parFormula("L50", L50, random, indent = 4))
-    mAdd(parFormula("SR", SR, random, indent = 4))
+    mAdd(parFormula("L50", L50, random, intercept = intercept, indent = 4))
+    mAdd(parFormula("SR", SR, random, intercept = intercept, indent = 4))
     if (curve == "richards")
-        mAdd(parFormula("delta", delta, random, indent = 4))
+        mAdd(parFormula("delta", delta, random, intercept = intercept, indent = 4))
     if (paired)
-        mAdd(parFormula("phi", phi, random, transform = "ilogit", indent = 4))
+        mAdd(parFormula("phi", phi, random, transform = "ilogit", intercept = intercept, indent = 4))
     mAdd("  }")
     mAdd("  ")
 
-    ## Deciding on the appropriate priors for the parameters:
-    mAdd("  ## Top-level priors for 'hyper' parameters:")
-    mAdd(jagsprior(hL50, priors$L50, 2))
-    mAdd(jagsprior(hSR, priors$SR, 2))
-    if (curve == "richards")
-        mAdd(jagsprior(hdelta, priors$delta, 2))
-    if (paired) 
-        mAdd(jagsprior(hphi, priors$phi, 2))
+    if (any(intercept)) {
+        ## Deciding on the appropriate priors for the parameters:
+        mAdd("  ## Top-level priors for 'hyper' parameters:")
+        if (intercept["L50"]) mAdd(jagsprior(hL50, priors$L50, 2))
+        if (intercept["SR"]) mAdd(jagsprior(hSR, priors$SR, 2))
+        if (curve == "richards" & intercept["delta"])
+            mAdd(jagsprior(hdelta, priors$delta, 2))
+        if (paired & intercept["phi"]) 
+            mAdd(jagsprior(hphi, priors$phi, 2))
+    }
     
 
-    mAdd("  ")
+    
     if (!is.null(random)) {
+        mAdd("  ")
         mAdd("  ## Precision parameters for random effects")
         invisible(lapply(random, function(par) {
             mAdd(randomeffectVar(par, 2))
@@ -205,12 +209,16 @@ randomeffectVar <- function(par, indent) {
         )
 }
 
-parFormula <- function(par, mat, random, transform = NULL, indent) {
+parFormula <- function(par, mat, random, transform = NULL, intercept = NULL, indent) {
     ind <- paste(rep(" ", indent), collapse = "")
 
-    fmla <- paste0(" <- mu_", par,
+    int <- intercept[par]
+    fmla <- paste0(" <- ",
+                   if (int) {
+                       paste0("mu_", par)
+                   },
                    if (!is.null(mat)) {
-                       paste0(" + ", par, "des[j, ] %*% ",
+                       paste0(ifelse(int, " + ", ""), par, "des[j, ] %*% ",
                               switch(par, "L50" = "beta", "SR" = "gamma",
                                      "phi" = "omega", "delta" = "zeta"))
                    } else ""
