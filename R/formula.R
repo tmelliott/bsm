@@ -103,7 +103,12 @@ print.bsmFormula <- function(x, use.values = FALSE, ...) {
 ##' @return Estimates
 ##' @author Tom Elliott
 ##' @export
-predictPar <- function(x, ...) {
+predictPar <- function(x, predict.values = NULL, ...) {
+    
+    if (!is.null(predict.values))
+        x$variables <-
+            modifyList(x$variables, predict.values[names(predict.values) %in% names(x$variables)])
+        
     df <- do.call(expand.grid, x$variables)
     
     mat <- model.matrix(x$formula, df)

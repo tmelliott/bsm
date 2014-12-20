@@ -260,13 +260,15 @@ print.bsmfit <- function(x, model = FALSE, coda = FALSE, ...) {
 }
 
 
-##' @param object a bsm object
+##' @param object 
 ##' @param p.values logical, include significance tests for parameters != 0?
 ##' @param formula.values logical, display values in formulae?
+##' @param predict.values values to be included in the prediction
 ##' @param ... 
 ##' @describeIn bsm Generate summary output for a bsmfit object
 ##' @export
-summary.bsmfit <- function(object, p.values = FALSE, formula.values = FALSE, ...) {
+summary.bsmfit <- function(object, p.values = FALSE, formula.values = FALSE,
+                           predict.values = NULL, ...) {
     x <- object
     fit <- x$fit
 
@@ -334,14 +336,31 @@ summary.bsmfit <- function(object, p.values = FALSE, formula.values = FALSE, ...
 
 
     ## Generate predictions for each 'curve'
+
+    ## Have to update variables to take away center
+    if (!is.null(predict.values)) {
+        predict.values <- lapply(pred.names <- names(predict.values), function(var) {
+            orig <- predict.values[[var]]
+            obj.df <- as.data.frame(x$object)
+            if (var %in% colnames(obj.df)) {
+                cent <- mean(obj.df[, var])
+                orig <- orig - cent
+            } else {
+                warning(paste0(var, " is not a known variable."))
+            }
+            orig
+        })
+        names(predict.values) <- pred.names
+    }
+    
     if (!is.null(x$L50))
-        L50mat <- predictPar(out$L50f)
+        L50mat <- predictPar(out$L50f, predict.values = predict.values)
     if (!is.null(x$SR))
-        SRmat <- predictPar(out$SRf)
+        SRmat <- predictPar(out$SRf, predict.values = predict.values)
     if (!is.null(x$phi))
-        phimat <- predictPar(out$phif)
+        phimat <- predictPar(out$phif, predict.values = predict.values)
     if (!is.null(x$delta))
-        deltamat <- predictPar(out$deltaf)
+        deltamat <- predictPar(out$deltaf, predict.values = predict.values)
 
     ## Prediction matrix:
     if (!is.null(x$L50)) {
@@ -377,8 +396,6 @@ summary.bsmfit <- function(object, p.values = FALSE, formula.values = FALSE, ...
             else cbind(pred.mat, delta = mat["mu_delta", "mean"])
     }
     
-
-    ## Do predictions:
     which <- colnames(pred.mat) %in% c("L50", "SR", "phi", "delta")
     pred.response <- pred.mat[, which, drop = FALSE]
     pred.explanatory <- pred.mat[, !which, drop = FALSE]
@@ -479,7 +496,7 @@ print.summary.bsmfit <- function(x, ...) {
     if (any(NL <- sapply(x[c("L50f", "SRf", "phif", "deltaf")], function(x) !is.null(x))))
         cat(sprintf("\nFormula%s for selection curve parameter%s:\n",
                     ifelse(sum(NL) > 1, "e", ""), ifelse(sum(NL) > 1, "s", "")))
-
+    
     if (!is.null(x$L50f))
         print(x$L50f, use.values = x$formula.values)
     if (!is.null(x$SRf))
@@ -567,12 +584,13 @@ print.summary.bsmfit <- function(x, ...) {
 ##' @title Predict parameter values for selection curve
 ##' @param object bsmfit or summary.bsmfit object
 ##' @param sort character vector of variables to sort by
+##' @param predict.values values to be included in the prediction
 ##' @param ... extra arguments
 ##' @return matrix
 ##' @author Tom Elliott
 ##' @export
-predict.bsmfit <- function(object, sort = NULL, ...) {
-    predict(summary(object), sort = sort, ...)
+predict.bsmfit <- function(object, sort = NULL, predict.values = NULL, ...) {
+    predict(summary(object, predict.values = predict.values), sort = sort, ...)
 }
 
 ##' @method predict summary.bsmfit
