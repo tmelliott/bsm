@@ -12,7 +12,11 @@ makeDesign <- function(par, dat) {
         isnum <- sapply(terms, function(p) {
             is.numeric(eval(parse(text = p), dat))
         }, USE.NAMES = FALSE)
-                
+
+
+        centers <- colMeans(des[, isnum, drop = FALSE])
+        attr(des, "center") <- centers
+        
         for (i in which(isnum))
             des[, i] <- des[, i, drop = FALSE] - mean(des[, i])
     }
@@ -21,4 +25,19 @@ makeDesign <- function(par, dat) {
         des
     else
         NULL
+}
+
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Get the Mean of Covariates
+##' @param x bsmfit object
+##' @param par the parameter for means
+##' @param ... extra args
+##' @return numeric, the mean of the covariates
+##' @author Tom Elliott
+##' ## @export
+getMean <- function(x, par, ...) {
+    attr(x[[par]], "center")
 }

@@ -260,12 +260,13 @@ print.bsmfit <- function(x, model = FALSE, coda = FALSE, ...) {
 }
 
 
-##' @param object a fitted bsm object
+##' @param object a bsm object
 ##' @param p.values logical, include significance tests for parameters != 0?
-##' 
+##' @param formula.values logical, display values in formulae?
+##' @param ... 
 ##' @describeIn bsm Generate summary output for a bsmfit object
 ##' @export
-summary.bsmfit <- function(object, p.values = FALSE, ...) {
+summary.bsmfit <- function(object, p.values = FALSE, formula.values = FALSE, ...) {
     x <- object
     fit <- x$fit
 
@@ -319,13 +320,17 @@ summary.bsmfit <- function(object, p.values = FALSE, ...) {
     out$summary.matrix <- mat
 
     if (!is.null(x$L50))
-        out$L50f <- generateFormula("L50", x$L50f, x$object, mat[, "mean", drop = FALSE])
+        out$L50f <- generateFormula("L50", x$L50f, x$object,
+                                    mat[, "mean", drop = FALSE], getMean(x, "L50"))
     if (!is.null(x$SR))
-        out$SRf <- generateFormula("SR", x$SRf, x$object, mat[, "mean", drop = FALSE])
+        out$SRf <- generateFormula("SR", x$SRf, x$object,
+                                   mat[, "mean", drop = FALSE], getMean(x, "SR"))
     if (!is.null(x$phi))
-        out$phif <- generateFormula("phi", x$phif, x$object, mat[, "mean", drop = FALSE])
+        out$phif <- generateFormula("phi", x$phif, x$object,
+                                    mat[, "mean", drop = FALSE], getMean(x, "phi"))
     if (!is.null(x$delta))
-        out$deltaf <- generateFormula("delta", x$deltaf, x$object, mat[, "mean", drop = FALSE])
+        out$deltaf <- generateFormula("delta", x$deltaf, x$object,
+                                      mat[, "mean", drop = FALSE], getMean(x, "delta"))
 
 
     ## Generate predictions for each 'curve'
@@ -373,6 +378,7 @@ summary.bsmfit <- function(object, p.values = FALSE, ...) {
     }
     
 
+    ## Do predictions:
     which <- colnames(pred.mat) %in% c("L50", "SR", "phi", "delta")
     pred.response <- pred.mat[, which, drop = FALSE]
     pred.explanatory <- pred.mat[, !which, drop = FALSE]
@@ -388,10 +394,10 @@ summary.bsmfit <- function(object, p.values = FALSE, ...) {
             tmp
     }))
     
-    dropCols <- apply(predict.df, 2, function(x) if (is.numeric(x)) all(x == 0) else FALSE)
-                      
-    
+    dropCols <- apply(predict.df, 2, function(x) if (is.numeric(x)) all(x == 0) else FALSE)               
     out$predict <- as.data.frame(predict[, !dropCols, drop = FALSE])
+
+    
 
     if (x$check.od) {
         odmat <- bugs$summary[c("od_exp", "od_obs", "p_od"), "mean"]
@@ -437,6 +443,7 @@ summary.bsmfit <- function(object, p.values = FALSE, ...) {
     out$gelman <- coda::gelman.diag(as.mcmc(x))
     out$geweke <- coda::geweke.diag(as.mcmc(x))
     out$heidel <- coda::heidel.diag(as.mcmc(x))
+    out$formula.values <- formula.values
     
     class(out) <- "summary.bsmfit"
     out
@@ -472,15 +479,15 @@ print.summary.bsmfit <- function(x, ...) {
     if (any(NL <- sapply(x[c("L50f", "SRf", "phif", "deltaf")], function(x) !is.null(x))))
         cat(sprintf("\nFormula%s for selection curve parameter%s:\n",
                     ifelse(sum(NL) > 1, "e", ""), ifelse(sum(NL) > 1, "s", "")))
-    
+
     if (!is.null(x$L50f))
-        print(x$L50f)
+        print(x$L50f, use.values = x$formula.values)
     if (!is.null(x$SRf))
-        print(x$SRf)
+        print(x$SRf, use.values = x$formula.values)
     if (!is.null(x$phif))
-        print(x$phif)
+        print(x$phif, use.values = x$formula.values)
     if (!is.null(x$deltaf))
-        print(x$deltaf)
+        print(x$deltaf, use.values = x$formula.values)
     
     cat("\n")
 

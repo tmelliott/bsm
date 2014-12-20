@@ -6,10 +6,11 @@
 ##' @param expression an expression
 ##' @param data data from fitted object
 ##' @param est parameter estimates for formula
+##' @param center center of continuous variables
 ##' @param ... additional arguments
 ##' @return a bsmFormula object for a given parameter
 ##' @author Tom Elliott
-generateFormula <- function(par, expression, data, est, ...) {
+generateFormula <- function(par, expression, data, est, center = NULL, ...) {
     vars <- attr(terms(expression), "term.labels")
     #vars <- vars[vars != "haul"]
     varL <- lapply(vars, function(x) eval(parse(text = x), data))
@@ -42,7 +43,8 @@ generateFormula <- function(par, expression, data, est, ...) {
                 variables   = levels,
                 used.levels = levs,
                 formula     = expression,
-                factors     = levels[!sapply(levels, is.null)])
+                factors     = levels[!sapply(levels, is.null)],
+                center      = center)
     
     class(out) <- "bsmFormula"
     out    
@@ -61,10 +63,15 @@ print.bsmFormula <- function(x, use.values = FALSE, ...) {
     levels <- x$variables
     levs   <- x$used.levels
     vars   <- names(levs)
+    cent   <- x$center
 
     form.pars <- unlist(lapply(1:length(levs), function(i) {
         if (is.null(levs[[i]])) {
-            vars[i]
+            paste0("(", vars[i], " - ",
+                   ifelse(!is.null(cent[vars[i]]),
+                          format(cent[vars[i]], digits = 4),
+                          paste0("mean(", vars[i], ")")),
+                   ")")
         } else {
             paste0("(", vars[i], " = ", levs[[i]], ")")
         }
