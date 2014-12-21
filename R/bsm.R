@@ -260,11 +260,11 @@ print.bsmfit <- function(x, model = FALSE, coda = FALSE, ...) {
 }
 
 
-##' @param object 
+##' @param object a bsmfit object
 ##' @param p.values logical, include significance tests for parameters != 0?
 ##' @param formula.values logical, display values in formulae?
 ##' @param predict.values values to be included in the prediction
-##' @param ... 
+##' 
 ##' @describeIn bsm Generate summary output for a bsmfit object
 ##' @export
 summary.bsmfit <- function(object, p.values = FALSE, formula.values = FALSE,
@@ -339,18 +339,19 @@ summary.bsmfit <- function(object, p.values = FALSE, formula.values = FALSE,
 
     ## Have to update variables to take away center
     if (!is.null(predict.values)) {
-        predict.values <- lapply(pred.names <- names(predict.values), function(var) {
-            orig <- predict.values[[var]]
-            obj.df <- as.data.frame(x$object)
-            if (var %in% colnames(obj.df)) {
-                cent <- mean(obj.df[, var])
-                orig <- orig - cent
-            } else {
-                warning(paste0(var, " is not a known variable."))
-            }
-            orig
-        })
-        names(predict.values) <- pred.names
+        predict.values <- list(original = predict.values,
+                               centers =
+                                   lapply(pred.names <- names(predict.values), function(var) {
+                                       obj.df <- as.data.frame(x$object)
+                                       if (var %in% colnames(obj.df)) {
+                                           center <- mean(obj.df[, var])
+                                       } else {
+                                           warning(paste0(var, " is not a known variable."))
+                                           center <- 0
+                                       }
+                                       center
+                                   }))
+        names(predict.values$centers) <- pred.names
     }
     
     if (!is.null(x$L50))

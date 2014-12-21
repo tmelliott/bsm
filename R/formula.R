@@ -94,26 +94,34 @@ print.bsmFormula <- function(x, use.values = FALSE, ...) {
 
 
 
-##' .. content for description{} (no empty lines) ..
-##'
-##' .. content for details{} ..
-##' @title Predict the values for fixed factor levels
-##' @param x bsmFormula object
-##' @param ... extra arguments
-##' @return Estimates
-##' @author Tom Elliott
-##' @export
-predictPar <- function(x, predict.values = NULL, ...) {
-    
-    if (!is.null(predict.values))
+predictPar <- function(x, predict.values = NULL) {
+
+    ## If values are to be predicted, need to center them:    
+    if (!is.null(predict.values)) {
+        predict.center <- predict.values$centers
+        predict.values <- predict.values$original    
+        centered.values <- lapply(names(predict.values), function(par) {
+            predict.values[[par]] - predict.center[[par]]
+        })
+        names(centered.values) <- names(predict.values)
+        
         x$variables <-
-            modifyList(x$variables, predict.values[names(predict.values) %in% names(x$variables)])
+            modifyList(x$variables, centered.values[names(centered.values) %in% names(x$variables)])
+    }
         
     df <- do.call(expand.grid, x$variables)
     
     mat <- model.matrix(x$formula, df)
     if ("haul" %in% colnames(mat))
         mat <- mat[, colnames(mat) != "haul"]
+
+    ## Update dataframe so it uses original values
+    if (!is.null(predict.values)) {
+        x$variables <-
+            modifyList(x$variables, predict.values[names(predict.values) %in% names(x$variables)])
+
+        df <- do.call(expand.grid, x$variables)
+    }
     
     pred.mat <- cbind(df, mat %*% c(x$intercept, x$coef.vals))
     colnames(pred.mat) <- c(colnames(df), x$parameter)

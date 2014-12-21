@@ -190,6 +190,8 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
 ##' @param lty line type
 ##' @param lwd line width
 ##' @param legend.order order of variables for legend purposes (color, line type, line width)
+##' @param predict.values extra values to predict
+##' @param n.posterior.rows the number of rows in the posterior plot
 ##' @param leg.posx x-position of legend, can be "topleft" etc
 ##' @param leg.posy NULL, or y-position of legend
 ##' @param leg.cex size of legend
@@ -204,6 +206,7 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
 plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                         estimate = "mean", cred.int = FALSE, cred.alpha = 0.95,
                         new = TRUE, col = NULL, lty = 1, lwd = 2, legend.order = NULL,
+                        predict.values = NULL, n.posterior.rows = 3,
                         leg.posx = "topleft", leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
                         chain.cols = rainbow(x$fit$BUGSoutput$n.chains + 1, s = 0.8, v = 0.8),
                         interactive = FALSE,
@@ -236,10 +239,10 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                m <- coda::as.mcmc(x$fit)[, parameters]
                nr <- np <- length(parameters)
                Nit <- x$fit$BUGSoutput$n.keep
-               if (np > 3 & !interactive)                   
+               if (np > n.posterior.rows & !interactive)                   
                    devAskNewPage(TRUE)
                
-               nr <- 3
+               nr <- n.posterior.rows
                op <- par(mfrow = c(nr, 2))
                theplot <- function(i) {
                    coda::traceplot(mi <- m[, i], col = chain.cols, 
@@ -305,7 +308,8 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                s <- x$fit$BUGSoutput$summary[, estimate]
                s <- s[names(s) %in% c("mu_L50", "mu_SR", "mu_delta", "mu_phi")]
                
-               predmat <- predict(x)
+               predmat <- predict(x, predict.values = predict.values,
+                                  sort = legend.order[legend.order != "null"])
 
                if (nrow(predmat) == 1) {
                    ## If they ask for a confidence interval:
@@ -366,9 +370,9 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                            if (is.null(col) | length(col) < length(unique(v1))) {
                                COL <- rainbow(length(unique(v1)), start = 0/6, end = 5/6,
                                               s = 0.8, v = 0.8)
-                               
+
                                LEG.LAB <- c(LEG.LAB, paste(expl[1], "=",
-                                                           levels(predmat[[expl[1]]])))
+                                                           levels(as.factor(predmat[[expl[1]]]))))
                                LEG.COL <- c(LEG.COL, COL)
                                LEG.LTY <- c(LEG.LTY, rep(1, length(COL)))
                                LEG.LWD <- c(LEG.LWD, rep(2, length(COL)))
@@ -379,13 +383,14 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                            COLS <- COL[v1]
                        }
                    }
+
                    
                    if (length(expl) > 1) {
                        v2 <- as.integer(as.factor(predmat[[expl[2]]]))
                        LTY <- v2
                        
                        LEG.LAB <- c(LEG.LAB, paste(expl[2], "=",
-                                                   levels(predmat[[expl[2]]])))
+                                                   levels(as.factor(predmat[[expl[2]]]))))
                        LEG.COL <- c(LEG.COL, rep("#000000", length(unique(LTY))))
                        LEG.LTY <- c(LEG.LTY, unique(LTY))
                        LEG.LWD <- c(LEG.LWD, rep(1, length(unique(LTY))))
@@ -398,7 +403,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                        LWD <- v3
                        
                        LEG.LAB <- c(LEG.LAB, paste(expl[3], "=",
-                                                   levels(predmat[[expl[3]]])))
+                                                   levels(as.factor(predmat[[expl[3]]]))))
                        LEG.COL <- c(LEG.COL, rep("#000000", length(unique(LWD))))
                        LEG.LTY <- c(LEG.LTY, rep(1, length(unique(LWD))))
                        LEG.LWD <- c(LEG.LWD, unique(LWD))

@@ -6,7 +6,8 @@
 \method{plot}{bsmfit}(x, which = "posterior", parameters = NULL,
   estimate = "mean", cred.int = FALSE, cred.alpha = 0.95, new = TRUE,
   col = NULL, lty = 1, lwd = 2, legend.order = NULL,
-  leg.posx = "topleft", leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
+  predict.values = NULL, n.posterior.rows = 3, leg.posx = "topleft",
+  leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
   chain.cols = rainbow(x$fit$BUGSoutput$n.chains + 1, s = 0.8, v = 0.8),
   interactive = FALSE, ...)
 }
@@ -34,6 +35,10 @@ plot over any existing one}
 \item{lwd}{line width}
 
 \item{legend.order}{order of variables for legend purposes (color, line type, line width)}
+
+\item{predict.values}{extra values to predict}
+
+\item{n.posterior.rows}{the number of rows in the posterior plot}
 
 \item{leg.posx}{x-position of legend, can be "topleft" etc}
 

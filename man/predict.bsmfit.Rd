@@ -4,7 +4,7 @@
 \alias{predict.summary.bsmfit}
 \title{Predict parameter values for selection curve}
 \usage{
-\method{predict}{bsmfit}(object, sort = NULL, ...)
+\method{predict}{bsmfit}(object, sort = NULL, predict.values = NULL, ...)
 
 \method{predict}{summary.bsmfit}(object, sort = NULL, ...)
 }
@@ -12,6 +12,8 @@
 \item{object}{bsmfit or summary.bsmfit object}
 
 \item{sort}{character vector of variables to sort by}
+
+\item{predict.values}{values to be included in the prediction}
 
 \item{...}{extra arguments}
 }

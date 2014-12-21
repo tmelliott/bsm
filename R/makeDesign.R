@@ -28,16 +28,16 @@ makeDesign <- function(par, dat) {
 }
 
 
-##' .. content for \description{} (no empty lines) ..
+##' description of thsi 
 ##'
-##' .. content for \details{} ..
+##' details of this
 ##' @title Get the Mean of Covariates
 ##' @param x bsmfit object
 ##' @param par the parameter for means
 ##' @param ... extra args
 ##' @return numeric, the mean of the covariates
 ##' @author Tom Elliott
-##' ## @export
+##' @export
 getMean <- function(x, par, ...) {
     attr(x[[par]], "center")
 }

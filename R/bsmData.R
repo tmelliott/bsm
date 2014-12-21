@@ -88,6 +88,15 @@ print.bsmdata <-
     }
 
 
+##' Return the first few rows of the data set.
+##'
+##' Acts just like head.data.frame
+##' 
+##' @title Head of BSM Data
+##' @param x a bsmdata object
+##' @param ... extra arguments
+##' @return data.frame
+##' @author Tom Elliott
 ##' @export head.bsmdata
 head.bsmdata <-
     function(x, ...) {
@@ -95,7 +104,17 @@ head.bsmdata <-
         invisible(NULL)
     }
 
-##' @export tail.bsmdata
+
+##' Return the last few rows of the data set.
+##'
+##' Acts just like tail.data.frame
+##' 
+##' @title Tail of BSM Data
+##' @param x a bsmdata object
+##' @param ... extra arguments
+##' @return data.frame
+##' @author Tom Elliott
+##' @export head.bsmdata
 tail.bsmdata <-
     function(x, ...) {
         print(tail(as.data.frame(x)))

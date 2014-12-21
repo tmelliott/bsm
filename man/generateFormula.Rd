@@ -4,7 +4,7 @@
 \alias{print.bsmFormula}
 \title{Generate a mathematical expression for a parameter}
 \usage{
-generateFormula(par, expression, data, est, ...)
+generateFormula(par, expression, data, est, center = NULL, ...)
 
 \method{print}{bsmFormula}(x, use.values = FALSE, ...)
 }
@@ -16,6 +16,8 @@ generateFormula(par, expression, data, est, ...)
 \item{data}{data from fitted object}
 
 \item{est}{parameter estimates for formula}
+
+\item{center}{center of continuous variables}
 
 \item{...}{additional arguments}
 

@@ -6,8 +6,8 @@
 \title{Fit a Bayesian Selectivity Model}
 \usage{
 bsm(x, family = "binomial", curve = "logistic", check.od = TRUE,
-  od = FALSE, combine = is.null(random), random = NULL, L50 = ~1,
-  SR = ~1, phi = if (attr(x, "paired")) ~1 else NULL, delta = if (curve ==
+  od = FALSE, combine = FALSE, random = NULL, L50 = ~1, SR = ~1,
+  phi = if (attr(x, "paired")) ~1 else NULL, delta = if (curve ==
   "richards") ~1 else NULL, priors = NULL, inits = NULL,
   length.dist = "iid", parameters = par$summary.parameters, file = NULL,
   fit = TRUE, n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin,
@@ -15,7 +15,8 @@ bsm(x, family = "binomial", curve = "logistic", check.od = TRUE,
 
 \method{print}{bsmfit}(x, model = FALSE, coda = FALSE, ...)
 
-\method{summary}{bsmfit}(object, p.values = FALSE, ...)
+\method{summary}{bsmfit}(object, p.values = FALSE, formula.values = FALSE,
+  predict.values = NULL, ...)
 }
 \arguments{
 \item{x}{an object of class \code{bsmdata}, from the \code{bsmData} function}
@@ -79,9 +80,13 @@ information is provided}
 
 \item{coda}{logical, if \code{TRUE}, then the summary from the \code{coda} package is used}
 
-\item{object}{a fitted bsm object}
+\item{object}{a bsmfit object}
 
 \item{p.values}{logical, include significance tests for parameters != 0?}
+
+\item{formula.values}{logical, display values in formulae?}
+
+\item{predict.values}{values to be included in the prediction}
 }
 \value{
 an object of class \code{bsmfit}
