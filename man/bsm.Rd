@@ -10,8 +10,9 @@ bsm(x, family = "binomial", curve = "logistic", check.od = TRUE,
   phi = if (attr(x, "paired")) ~1 else NULL, delta = if (curve ==
   "richards") ~1 else NULL, priors = NULL, inits = NULL,
   length.dist = "iid", parameters = par$summary.parameters, file = NULL,
-  fit = TRUE, n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin,
-  n.chains = 3, max.attempts = 10, quiet = FALSE, ...)
+  fit = TRUE, include.lambda = FALSE, n.samples = 1000, n.thin = 1,
+  n.burn = n.samples * n.thin, n.chains = 3, max.attempts = 10,
+  quiet = FALSE, progress.bar = "text", ...)
 
 \method{print}{bsmfit}(x, model = FALSE, coda = FALSE, ...)
 
@@ -60,6 +61,8 @@ created}
 \item{fit}{logical, if \code{TRUE} then the JAGS model is fit, otherwise only the model and data
 are returned.}
 
+\item{include.lambda}{logical, if \code{TRUE}, the lambda parameter will be saved as well}
+
 \item{n.samples}{the total number of samples to obtain (excludes burnin and thin)}
 
 \item{n.thin}{the thinning interval}
@@ -72,6 +75,8 @@ are returned.}
 due to bad initial values, the model cannot be initiated and fails)}
 
 \item{quiet}{suppress all output messages from JAGS?}
+
+\item{progress.bar}{one of "none", "text" or "gui" for the JAGS progress bar}
 
 \item{...}{additional arguments}
 

@@ -47,6 +47,8 @@
 ##' @param fit logical, if \code{TRUE} then the JAGS model is fit, otherwise only the model and data
 ##' are returned.
 ##' 
+##' @param include.lambda logical, if \code{TRUE}, the lambda parameter will be saved as well
+##' 
 ##' @param n.samples the total number of samples to obtain (excludes burnin and thin)
 ##' 
 ##' @param n.thin the thinning interval
@@ -59,6 +61,8 @@
 ##' due to bad initial values, the model cannot be initiated and fails)
 ##' 
 ##' @param quiet suppress all output messages from JAGS?
+##' 
+##' @param progress.bar one of "none", "text" or "gui" for the JAGS progress bar
 ##' 
 ##' @param ... additional arguments
 ##' 
@@ -73,8 +77,9 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
                 delta = if (curve == "richards") ~1 else NULL,
                 priors = NULL, inits = NULL, length.dist = "iid",
                 parameters = par$summary.parameters, file = NULL, fit = TRUE,
+                include.lambda = FALSE,
                 n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin, n.chains = 3,
-                max.attempts = 10, quiet = FALSE, ...) {
+                max.attempts = 10, quiet = FALSE, progress.bar = "text", ...) {
 
     if (class(x) != "bsmdata")
         stop("x must be a bsmdata object from the bsmData function")
@@ -108,6 +113,8 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
         ## Can't check overdispersion ...?
         ## check.od <- FALSE  # (for now ...)
     }
+
+    
     
     
     ## Check for "haul" in the design
@@ -151,6 +158,10 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
                    L50des, SRdes, phides, deltades, length.dist,
                    paired = attr(x, "paired"))
 
+    if (include.lambda & family == "poisson") {
+        parameters <- c(parameters, "lambda")
+    }
+
     default.inits <- function()
         list(mu_L50 = rnorm(1, median(dat$x), diff(range(dat$x))/2),
              mu_SR = rlnorm(1, log(diff(range(dat$x))/3)))
@@ -186,14 +197,16 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
                 capture.output(suppressMessages(
                     j <- try(R2jags::jags(dat, final.inits, parameters, mod,
                                           n.chains = n.chains, n.iter = n.burn + n.samples * n.thin,
-                                          n.burnin = n.burn, n.thin = n.thin),
+                                          n.burnin = n.burn, n.thin = n.thin,
+                                          progress.bar = progress.bar),
                              TRUE)),
                                file = tempfile()
                                )
             else
                 j <- try(R2jags::jags(dat, final.inits, parameters, mod,
                                       n.chains = n.chains, n.iter = n.burn + n.samples * n.thin,
-                                      n.burnin = n.burn, n.thin = n.thin),
+                                      n.burnin = n.burn, n.thin = n.thin,
+                                      progress.bar = progress.bar),
                          TRUE)
             
             if (!inherits(j, "try-error"))
@@ -676,3 +689,8 @@ print.dic.summary <- function(x, ...) {
                 "\n"), 1, cat, sep = "   ")
 }
 
+##' @export
+`[.dic.summary` <- function(x, i, j) {
+    mat <- do.call(rbind, x)
+    mat[i, j]
+}
