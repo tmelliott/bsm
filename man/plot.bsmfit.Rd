@@ -4,10 +4,10 @@
 \title{Plot a BSM Fit}
 \usage{
 \method{plot}{bsmfit}(x, which = "posterior", parameters = NULL,
-  estimate = "mean", cred.int = FALSE, cred.alpha = 0.95, new = TRUE,
-  col = NULL, lty = 1, lwd = 2, legend.order = NULL,
-  predict.values = NULL, n.posterior.rows = 3, leg.posx = "topleft",
-  leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
+  estimate = "mean", cred.int = FALSE, cred.alpha = 0.95,
+  cred.col = "#99999950", new = TRUE, col = NULL, lty = 1, lwd = 2,
+  legend.order = NULL, predict.values = NULL, n.posterior.rows = 3,
+  leg.posx = "topleft", leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
   chain.cols = rainbow(x$fit$BUGSoutput$n.chains + 1, s = 0.8, v = 0.8),
   interactive = FALSE, ...)
 }
@@ -24,6 +24,8 @@
 posterior samples of L50 and SR (and delta)}
 
 \item{cred.alpha}{the significance level for the credible interval, default is 0.95}
+
+\item{cred.col}{the colour of the credible interval}
 
 \item{new}{logical, if \code{TRUE}, then a new plot of the data is drawn, otherwise the curve is
 plot over any existing one}

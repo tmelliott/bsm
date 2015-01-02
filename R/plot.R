@@ -184,6 +184,7 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
 ##' @param cred.int logical, if \code{TRUE}, then a credible interval is calcualted from the
 ##' posterior samples of L50 and SR (and delta)
 ##' @param cred.alpha the significance level for the credible interval, default is 0.95
+##' @param cred.col the colour of the credible interval
 ##' @param new logical, if \code{TRUE}, then a new plot of the data is drawn, otherwise the curve is
 ##' plot over any existing one
 ##' @param col colour of lines
@@ -204,7 +205,7 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
 ##' @author Tom Elliott
 ##' @export
 plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
-                        estimate = "mean", cred.int = FALSE, cred.alpha = 0.95,
+                        estimate = "mean", cred.int = FALSE, cred.alpha = 0.95, cred.col = "#99999950",
                         new = TRUE, col = NULL, lty = 1, lwd = 2, legend.order = NULL,
                         predict.values = NULL, n.posterior.rows = 3,
                         leg.posx = "topleft", leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
@@ -340,7 +341,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                        ci <- 0.5 + cred.alpha / 2 * c(-1, 1)
                        qx <- apply(curves, 1, quantile, probs = ci)
                        polygon(c(xx, rev(xx)), c(qx[1, ], rev(qx[2, ])),
-                               col = "#99999950", lty = 3)
+                               col = cred.col, lty = 3)
                    }
 
                    names(s) <- gsub("mu_", "", names(s))
