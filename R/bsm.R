@@ -694,3 +694,8 @@ print.dic.summary <- function(x, ...) {
     mat <- do.call(rbind, x)
     mat[i, j]
 }
+
+##' @export
+`$.dic.summary` <- function(x, name) {
+    x[, name]
+}
