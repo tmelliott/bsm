@@ -41,6 +41,9 @@
 ##' really only want these parameters - may cause errors in summary output and plots depending on
 ##' parameters selected.
 ##' 
+##' @param extra.pars additional parameters to be tracked as well as \code{parameters}. Lets you
+##' keep the default parameters.
+##' 
 ##' @param file the file name to save the JAGS model in. If \code{NULL}, then a temporary file is
 ##' created
 ##' 
@@ -76,7 +79,7 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
                 phi = if (attr(x, "paired")) ~1 else NULL,
                 delta = if (curve == "richards") ~1 else NULL,
                 priors = NULL, inits = NULL, length.dist = "iid",
-                parameters = par$summary.parameters, file = NULL, fit = TRUE,
+                parameters = par$summary.parameters, extra.pars = NULL, file = NULL, fit = TRUE,
                 include.lambda = FALSE,
                 n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin, n.chains = 3,
                 max.attempts = 10, quiet = FALSE, progress.bar = "text", ...) {
@@ -158,8 +161,13 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
                    L50des, SRdes, phides, deltades, length.dist,
                    paired = attr(x, "paired"))
 
+
+    ## Some more convenient ways of including additional parameters:
     if (include.lambda & family == "poisson") {
         parameters <- c(parameters, "lambda")
+    }
+    if (!is.null(extra.pars)) {
+        parameters <- c(parameters, extra.pars)
     }
 
     default.inits <- function()

@@ -9,10 +9,11 @@ bsm(x, family = "binomial", curve = "logistic", check.od = TRUE,
   od = FALSE, combine = FALSE, random = NULL, L50 = ~1, SR = ~1,
   phi = if (attr(x, "paired")) ~1 else NULL, delta = if (curve ==
   "richards") ~1 else NULL, priors = NULL, inits = NULL,
-  length.dist = "iid", parameters = par$summary.parameters, file = NULL,
-  fit = TRUE, include.lambda = FALSE, n.samples = 1000, n.thin = 1,
-  n.burn = n.samples * n.thin, n.chains = 3, max.attempts = 10,
-  quiet = FALSE, progress.bar = "text", ...)
+  length.dist = "iid", parameters = par$summary.parameters,
+  extra.pars = NULL, file = NULL, fit = TRUE, include.lambda = FALSE,
+  n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin,
+  n.chains = 3, max.attempts = 10, quiet = FALSE, progress.bar = "text",
+  ...)
 
 \method{print}{bsmfit}(x, model = FALSE, coda = FALSE, ...)
 
@@ -54,6 +55,9 @@ parameters. See details for more information.}
 \item{parameters}{the parameters to save in the JAGS output. NOTE: only use this if you really
 really only want these parameters - may cause errors in summary output and plots depending on
 parameters selected.}
+
+\item{extra.pars}{additional parameters to be tracked as well as \code{parameters}. Lets you
+keep the default parameters.}
 
 \item{file}{the file name to save the JAGS model in. If \code{NULL}, then a temporary file is
 created}
