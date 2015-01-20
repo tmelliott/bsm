@@ -26,12 +26,14 @@
 ##' @param leg.posy if \code{leg.posx} is an x-value, then this is the y-value
 ##' @param leg.cex size of legend
 ##' @param leg.bty the box type for the legend. Defaults to \code{"n"} for no box
+##' @param col.palette the color palette to use by default; can be \code{rainbow} or a vector of colors
 ##' @param ... additional arguments that will be passed to the \code{plot.default} function
 ##' @return NULL
 ##' @author Tom Elliott
 ##' @export
 plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
                          leg.posx = "topleft", leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
+                         col.palette = "rainbow",
                          ...) {
     ## grab some variables from x (bsmdata object)
     paired <- attr(x, "paired")
@@ -101,8 +103,12 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
 
     ## generate the colours and plotting symbols 
     if (bycol) {
-        cols <- rainbow(ncol <- length(levels(colid)), start = 0/6, end = 5/6,
-                        s = 0.9, v = 0.9, alpha = 0.6)
+        ncol <- length(levels(colid))
+        if (length(col.palette == 1) & col.palette[1] == "rainbow")
+            cols <- rainbow(ncol, start = 0/6, end = 5/6,
+                            s = 0.9, v = 0.9, alpha = 0.6)
+        else
+            cols <- rep(col.palette, ncol)
     } else {
         cols <- col
         colid <- 1
