@@ -423,9 +423,9 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                        names(c) <- resp
                        bsmCurve(c, col = COLS[i], lty = LTY[i], lwd = LWD[i], ...)
                    }
-                   
-                   legend(leg.posx, leg.posy, LEG.LAB, col = LEG.COL, lty = LEG.LTY, lwd = LEG.LWD,
-                          bty = leg.bty, cex = leg.cex)
+                   if (length(LEG.LAB) > 0)
+                       legend(leg.posx, leg.posy, LEG.LAB, col = LEG.COL, lty = LEG.LTY, lwd = LEG.LWD,
+                              bty = leg.bty, cex = leg.cex)
                }
            })
     
