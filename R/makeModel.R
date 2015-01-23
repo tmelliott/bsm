@@ -70,7 +70,7 @@ makeModel <- function(family = "binomial", curve = "logistic", check.od = FALSE,
     mAdd("  for (i in 1:N) {")
     mAdd("    for (j in 1:M) {")
     mAdd("      ## The likelihood on the observed counts:")
-    mAdd(lhood(family, od, combine, 6))
+    mAdd(lhood(family, od, combine, paired, 6))
     mAdd("      ")
 
     ## Make decisions on the "form" of L50 and SR (and delta)
@@ -343,7 +343,7 @@ selectCurve <- function(family, curve, paired, L50, SR, delta, phi, od, indent) 
         switch(curve,
                "logistic" = {
                    paste0(
-                       ifelse(paired,
+                       ifelse(paired & family == "binomial",
                               paste0(
                                   ind,
                                   c(paste0("p[i, j] <- q1[j] * ", phi, " * r[i, j] /"),
@@ -352,7 +352,7 @@ selectCurve <- function(family, curve, paired, L50, SR, delta, phi, od, indent) 
                               ""),
                        paste0(
                            ind,
-                           c(paste0(ifelse(paired, "r", "p"), "[i, j] <- ilogit(eta[i, j])"),
+                           c(paste0(ifelse(paired & family == "binomial", "r", "p"), "[i, j] <- ilogit(eta[i, j])"),
                              ifelse(od & family == "binomial",
                                     "eta[i, j] ~ dnorm(etahat[i, j], tau_od)",
                                     "eta[i, j] <- etahat[i, j]"),
@@ -366,7 +366,9 @@ selectCurve <- function(family, curve, paired, L50, SR, delta, phi, od, indent) 
                    paste0(
                        ind,
                        c(ifelse(family == "binomial",
-                                paste0("p[i, j] <- (q1[j]/q2[j]) * r[i, j] / (1 - (1 - q1[j]/q2[j]) * r[i, j])"),
+                                ifelse(paired,
+                                       paste0("p[i, j] <- (q1[j]/q2[j]) * r[i, j] * phi[j] / (1 - (1 - (q1[j]/q2[j]) * r[i, j]) * phi[j])"),
+                                       paste0("p[i, j] <- (q1[j]/q2[j]) * r[i, j] / (1 - (1 - q1[j]/q2[j]) * r[i, j])")),
                                 paste0("p[i, j] <- r[i, j]")),
                          paste0("r[i, j] <- ilogit(eta[i, j]) ^ (1 / ", delta, ")"),
                          ifelse(od & family == "binomial",
@@ -382,7 +384,7 @@ selectCurve <- function(family, curve, paired, L50, SR, delta, phi, od, indent) 
 }
 
 
-lhood <- function(family, od, combine = FALSE, indent) {
+lhood <- function(family, od, combine = FALSE, paired = FALSE, indent) {
     ind <- paste(rep(" ", indent), collapse = "")
     switch(family,
            "binomial" = {
@@ -412,8 +414,12 @@ lhood <- function(family, od, combine = FALSE, indent) {
                      paste0("theta", 1:2, "hat[i, j] <- exp(ltheta", 1:2, "hat[i, j])"),
                      if (od) paste0("ltheta", 1:2, "[i, j] ~ dnorm(ltheta", 1:2, "hat[i, j], tau_od)")
                      else paste0("ltheta", 1:2, "[i, j] <- ltheta", 1:2, "hat[i, j]"),
-                     "ltheta1hat[i, j] <- log(q1[j]) + lp[i, j] + llambda[i, j]",
-                     "ltheta2hat[i, j] <- log(q2[j]) + l1mp[i, j] + llambda[i, j]",
+                     paste0("ltheta1hat[i, j] <- log(q1[j]) + lp[i, j] + ",
+                            ifelse(paired, "log(phi[j]) + ", ""),
+                            "llambda[i, j]"),
+                     paste0("ltheta2hat[i, j] <- log(q2[j]) + ",
+                            ifelse(paired, "log(1 - phi[j])", "l1mp[i, j]"),
+                            " + llambda[i, j]"),
                      "",
                      "lp[i, j] <- log(p[i, j])",
                      "l1mp[i, j] <- log(1 - p[i, j])"),
