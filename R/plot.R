@@ -27,13 +27,14 @@
 ##' @param leg.cex size of legend
 ##' @param leg.bty the box type for the legend. Defaults to \code{"n"} for no box
 ##' @param col.palette the color palette to use by default; can be \code{rainbow} or a vector of colors
+##' @param xlim range of x-values
 ##' @param ... additional arguments that will be passed to the \code{plot.default} function
 ##' @return NULL
 ##' @author Tom Elliott
 ##' @export
 plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
                          leg.posx = "topleft", leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
-                         col.palette = "rainbow",
+                         col.palette = "rainbow", xlim = range(x$length),
                          ...) {
     ## grab some variables from x (bsmdata object)
     paired <- attr(x, "paired")
@@ -150,7 +151,10 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
                      "roportion caught in ",
                      ifelse(paired, "experimental trawl", "codend")
                      ),
-                 ylim = 0:1, col = cols[as.numeric(colid)], pch = pchs[as.numeric(pchid)],
+                 xlim = xlim,
+                 ylim = 0:1,
+                 col = cols[as.numeric(colid)],
+                 pch = pchs[as.numeric(pchid)],
                  cex = size))
 
     ## draw the legend if it's asked for

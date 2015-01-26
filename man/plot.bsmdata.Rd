@@ -5,7 +5,7 @@
 \usage{
 \method{plot}{bsmdata}(x, scale = TRUE, col, pch, legend = FALSE, weight,
   leg.posx = "topleft", leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
-  col.palette = "rainbow", ...)
+  col.palette = "rainbow", xlim = range(x$length), ...)
 }
 \arguments{
 \item{x}{a \code{bsmdata} object}
@@ -32,6 +32,8 @@ specific \code{x}-coordinates}
 \item{leg.bty}{the box type for the legend. Defaults to \code{"n"} for no box}
 
 \item{col.palette}{the color palette to use by default; can be \code{rainbow} or a vector of colors}
+
+\item{xlim}{range of x-values}
 
 \item{...}{additional arguments that will be passed to the \code{plot.default} function}
 }

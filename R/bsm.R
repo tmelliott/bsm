@@ -105,11 +105,12 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
         y1 <- df$y1 / df$q1
         y2 <- df$y2 / df$q2
 
-        lens <- unique(df$length)
+        lens <- sort(unique(df$length))
 
-        x <- bsmData(y1 = round(tapply(y1, df$length, sum)),
-                     y2 = round(tapply(y2, df$length, sum)),
-                     length = unique(df$length),
+        y1 <- round(tapply(y1, df$length, sum))
+        y2 <- round(tapply(y2, df$length, sum))
+        
+        x <- bsmData(y1 = y1, y2 = y2, length = lens,
                      length.unit = attr(x, "length.unit"),
                      paired = attr(x, "paired"))
         combine <- FALSE
