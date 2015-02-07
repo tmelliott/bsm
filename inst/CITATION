@@ -1,0 +1,9 @@
+year <- sub("-.*", "", meta$date)
+note <- sprintf("R package version %s", meta$Version)
+
+bibentry(bibtype = "Manual",
+         title   = "{BSM}: Bayesian Selectivity Modelling",
+         author  = c(person("Tom", "Elliott")),
+         year    = 2015,
+         note    = note,
+         url     = "https://github.com/tell029/bsm")
