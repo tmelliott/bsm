@@ -275,7 +275,7 @@ checkOD <- function(family, indent) {
                      "}",
                      "od_obs <- sum(obsX[1:N])",
                      "od_exp <- sum(expX[1:N])",
-                     "p_od <- ifelse(od_exp <= od_obs, 0, 1)"),
+                     "p_od <- ifelse(od_exp <= od_obs, 1, 0)"),
                    collapse = "\n"
                    )
            },

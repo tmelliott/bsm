@@ -547,7 +547,7 @@ print.summary.bsmfit <- function(x, ...) {
             cat(apply(cbind("  ",
                             format(c(paste(format(c("Expected", "Observed"), justify = "right"),
                                            "Pearson Chi-square:"),
-                                     "Pr[expected < observed]:"), justify = "right"),
+                                     "Pr[overdispersion]:"), justify = "right"),
                             format(c(format(unlist(od$check)[1:2], digits = 4),
                                      ifelse(pval < 1e-12, "< 1e-12", signif(pval, 2))),
                                    justify = "right"),
