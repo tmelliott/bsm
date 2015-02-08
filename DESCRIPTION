@@ -1,7 +1,7 @@
 Package: BSM
 Type: Package
 Title: Bayesian Selectivity Modelling of Fisheries Trawl Data
-Version: 1.0
+Version: 0.1
 Date: 2014-07-15
 Authors@R: c(person("Tom", "Elliott", role = c("aut", "cre"),
     email = "tell029@aucklanduni.ac.nz"))
