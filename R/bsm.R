@@ -641,8 +641,11 @@ print.bsm.predict <- function(x, ...) {
 
 
 
-
-
+##' @export
+postsample <- function(x, n = 50, pars = colnames(p)) {
+    p <- x$fit$BUGSoutput$sims.matrix
+    p[sample(p, size = n), pars]
+}
 
 
 

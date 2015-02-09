@@ -25,9 +25,11 @@ bsmCurve <- function(x, obj, xlim, add = TRUE, ...) {
     if (length(x) < 2)
         stop("x must be a vector of values for L50, SR, and delta (= 1 by default)")
 
-    if (!is.null(names(x)))
+    if (!is.null(names(x))) {
+        names(x) <- gsub("mu_", "", names(x))
         if (any(!names(x) %in% c("L50", "SR", "delta", "phi")))
             stop("Names of x must be `L50`, `SR`, `delta` and `phi`")
+    }
     
     if (length(x) == 2) {
         delta <- 1
