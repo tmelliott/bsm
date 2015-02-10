@@ -67,6 +67,8 @@
 ##' 
 ##' @param progress.bar one of "none", "text" or "gui" for the JAGS progress bar
 ##' 
+##' @param show.info logical, if \code{FALSE}, the package information will not be printed
+##' 
 ##' @param ... additional arguments
 ##' 
 ##' @return an object of class \code{bsmfit}
@@ -82,8 +84,8 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
                 parameters = par$summary.parameters, extra.pars = NULL, file = NULL, fit = TRUE,
                 include.lambda = FALSE,
                 n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin, n.chains = 3,
-                max.attempts = 10, quiet = FALSE, progress.bar = "text", ...) {
-
+                max.attempts = 10, quiet = FALSE, progress.bar = "text",
+                show.info = TRUE, ...) {
     if (class(x) != "bsmdata")
         stop("x must be a bsmdata object from the bsmData function")
 
@@ -156,7 +158,7 @@ bsm <- function(x, family = "binomial", curve = "logistic", check.od = TRUE, od 
     
     mod <- makeModel(family, curve, check.od, od, combine, random,
                      L50des, SRdes, phides, deltades, priors, length.dist,
-                     paired = attr(x, "paired"), file)
+                     paired = attr(x, "paired"), file, show.info)
     dat <- makeData(x, family, combine, random, L50des, SRdes, phides, deltades)
     par <- getPars(family, curve, check.od, od, combine, random,
                    L50des, SRdes, phides, deltades, length.dist,

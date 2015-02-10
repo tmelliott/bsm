@@ -6,7 +6,7 @@
 makeModel(family = "binomial", curve = "logistic", check.od = FALSE,
   od = FALSE, combine = is.null(random), random = NULL, L50 = NULL,
   SR = NULL, phi = NULL, delta = NULL, priors = NULL,
-  length.dist = "iid", paired, file = tempfile(), ...)
+  length.dist = "iid", paired, file = tempfile(), show.info = TRUE, ...)
 }
 \arguments{
 \item{family}{\code{"logistic"} (default) or \code{"poisson"}, the family for the likelihood}
@@ -40,6 +40,8 @@ parameters. See details for more information.}
 
 \item{file}{the file name to save the JAGS model in. If \code{NULL}, then a temporary file is
 created}
+
+\item{show.info}{logical, if \code{FALSE}, the package information will not be printed}
 
 \item{...}{additional arguments}
 }

@@ -13,7 +13,7 @@ bsm(x, family = "binomial", curve = "logistic", check.od = TRUE,
   extra.pars = NULL, file = NULL, fit = TRUE, include.lambda = FALSE,
   n.samples = 1000, n.thin = 1, n.burn = n.samples * n.thin,
   n.chains = 3, max.attempts = 10, quiet = FALSE, progress.bar = "text",
-  ...)
+  show.info = TRUE, ...)
 
 \method{print}{bsmfit}(x, model = FALSE, coda = FALSE, ...)
 
@@ -81,6 +81,8 @@ due to bad initial values, the model cannot be initiated and fails)}
 \item{quiet}{suppress all output messages from JAGS?}
 
 \item{progress.bar}{one of "none", "text" or "gui" for the JAGS progress bar}
+
+\item{show.info}{logical, if \code{FALSE}, the package information will not be printed}
 
 \item{...}{additional arguments}
 
