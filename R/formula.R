@@ -68,14 +68,16 @@ print.bsmFormula <- function(x, use.values = FALSE, ...) {
     form.pars <- unlist(lapply(1:length(levs), function(i) {
         if (is.null(levs[[i]])) {
             paste0("(", vars[i], " - ",
-                   ifelse(!is.null(cent[vars[i]]),
-                          format(cent[vars[i]], digits = 4),
+                   ifelse(!is.null(cent[i]),
+                          format(cent[i], digits = 4),
                           paste0("mean(", vars[i], ")")),
                    ")")
         } else {
             paste0("(", vars[i], " = ", levs[[i]], ")")
         }
     }))
+
+    
     
     values.str <- paste(ifelse(values>=0, "+", "-"), c(abs(values)))
 
