@@ -51,12 +51,12 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
         col <- "#000000"
     else
         col <- eval(mc$col, x)
-    
+
     if (length(col) == 1) {
         bycol <- col %in% names(x)
-        
+
         if (bycol)
-            colid <- as.factor(x[[col]])      
+            colid <- as.factor(x[[col]])
     } else {
         bycol <- length(col) == length(x$y1)
         colid <- as.factor(col)
@@ -70,9 +70,9 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
 
     if (length(pch) == 1) {
         bypch <- pch %in% names(x)
-        
+
         if (bypch)
-            pchid <- as.factor(x[[pch]])      
+            pchid <- as.factor(x[[pch]])
     } else {
         bypch <- length(pch) == length(x$y1)
         pchid <- as.factor(pch)
@@ -95,14 +95,14 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
             }
         })]
     if (bypch)
-        pchname <- names(x)[sapply(x, function(x) all(x == pchid))] 
+        pchname <- names(x)[sapply(x, function(x) all(x == pchid))]
 
     ## implement appropriate scaling
     Y1 <- with(x, if (scale) y1 / q1 else y1)
     Y2 <- with(x, if (scale) y2 / q2 else y2)
     N <- Y1 + Y2
 
-    ## generate the colours and plotting symbols 
+    ## generate the colours and plotting symbols
     if (bycol) {
         ncol <- length(levels(colid))
         if (length(col.palette == 1) & col.palette[1] == "rainbow")
@@ -133,7 +133,7 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
         ## if specifying N as the weighting variable, sum over lengths
         if (all(w == N))
             w <- (tapply(N, x$haul, sum))[x$haul]
-        
+
         size <- 4 * (w - min(w)) / diff(range(w)) + 0.5
         if (length(pchs == 1))
             if (pchs == 1)
@@ -161,7 +161,7 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
     if (legend && (bycol | bypch)) {
         LEG <- COL <- character()
         PCH <- numeric()
-        
+
         if (bycol) {
             LEG <- c(LEG, paste(colname, levels(colid)))
             COL <- c(COL, cols)
@@ -172,7 +172,7 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
             COL <- c(COL, rep("#000000", npch))
             PCH <- c(PCH, pchs)
         }
-        
+
         legend(leg.posx, leg.posy, LEG, pch = PCH, col = COL,
                bty = leg.bty, cex = leg.cex)
     }
@@ -210,6 +210,7 @@ plot.bsmdata <- function(x, scale = TRUE, col, pch, legend = FALSE, weight,
 ##' @param chain.cols colours of lines for traceplots and density plots, NOTE: not used for pairs
 ##' and curve
 ##' @param interactive logical, if \code{TRUE}, use clicking on the plot to navigate through plots
+##' @param trace.samples numeric, the (approximate) number of samples to plot in the traceplots (obtained by thinning appropriately)
 ##' @param ... additional parameters to \code{plot}
 ##' @return NULL
 ##' @author Tom Elliott
@@ -220,7 +221,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                         predict.values = NULL, n.posterior.rows = 3,
                         leg.posx = "topleft", leg.posy = NULL, leg.cex = 0.7, leg.bty = "n",
                         chain.cols = rainbow(x$fit$BUGSoutput$n.chains + 1, s = 0.8, v = 0.8),
-                        interactive = FALSE,
+                        interactive = FALSE, trace.samples = 1000,
                         ...) {
     if (length(which) > 1)
         warning("`which` can only be a single value, only the first being used")
@@ -228,7 +229,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
     if (is.null(parameters)) {
         all.par <- c("mu_L50", "sig2_L50", "mu_SR", "sig2_SR",
                      "mu_phi", "sig2_phi", "mu_delta", "sig2_delta")
-        
+
         parameters <- all.par[all.par %in% (ap <- x$fit$BUGSoutput$root.short)]
         mn <- colnames(x$fit$BUGSoutput$sims.matrix)
         for (coef in c("beta", "gamma", "omega", "zeta"))
@@ -250,14 +251,27 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                m <- coda::as.mcmc(x$fit)[, parameters]
                nr <- np <- length(parameters)
                Nit <- x$fit$BUGSoutput$n.keep
-               if (np > n.posterior.rows & !interactive)                   
+               if (np > n.posterior.rows & !interactive)
                    devAskNewPage(TRUE)
-               
+
                nr <- n.posterior.rows
                op <- par(mfrow = c(nr, 2))
                theplot <- function(i) {
-                   coda::traceplot(mi <- m[, i], col = chain.cols, 
-                                   main = paste0("Trace of ", parameters[i])) 
+                   mi <- m[, i]
+                   if (trace.samples < length(mi[[1]])) {
+                       nthin <- round(length(mi[[1]]) / trace.samples)
+                   } else {
+                       nthin <- 1
+                   }
+
+                   ss <- seq(nthin, length(mi[[1]]), by = nthin)
+
+                   mt <- as.mcmc.list(lapply(mi, function(x) {
+                       mcmc(x[ss], start = summary(x)$start, end = summary(x)$end, thin = nthin * summary(x)$thin)
+                   }))
+
+                   coda::traceplot(mt, col = chain.cols,
+                                   main = paste0("Trace of ", parameters[i]))
                    dens <- lapply(mi, density)
                    plot.new()
                    plot.window(ylim = c(0, max(sapply(dens, function(x) max(x$y)))),
@@ -269,7 +283,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                          xlab = paste0("N = ", Nit),
                          ylab = "Density")
                }
-               
+
                if (interactive) {
                    cat("\n")
                    cat("  Click top-right for next and top-left for previous.\n",
@@ -277,17 +291,17 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                    I <- 1
                    while (I > 0) {
                        ow <- par(mfrow = c(nr, 2))
-                       
+
                        ii <- 3 * (I - 1) + (1:3)
-                           
+
                        for (i in ii[ii <= np]) {
                            dev.hold()
                            theplot(i)
                            dev.flush()
                        }
-                       
+
                        ou <- par(usr = c(0, 1, 0, 1))
-                       
+
                        xy <- locator(1)
                        if (is.null(xy))
                            I <- 0
@@ -314,11 +328,11 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
            "curve" = {
                if (new)
                    plot(x$object)
-               
+
                if (estimate == "median") estimate <- "50%"
                s <- x$fit$BUGSoutput$summary[, estimate]
                s <- s[names(s) %in% c("mu_L50", "mu_SR", "mu_delta", "mu_phi")]
-               
+
                predmat <- predict(x, predict.values = predict.values,
                                   sort = legend.order[legend.order != "null"])
 
@@ -329,7 +343,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                            warning("cred.alpha must be between 0 and 1. Using default = 0.95")
                            cred.alpha <- 0.95
                        }
-                       
+
                        post <- x$fit$BUGSoutput$sims.matrix[, names(s)]
                        if (!"mu_delta" %in% (cc <- colnames(post))) {
                            post <- cbind(post, 1)
@@ -339,7 +353,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                            post <- cbind(post, 100)
                            colnames(post) <- c(cc, "mu_phi")
                        }
-                       
+
                        xl <- par()$usr[1:2]
                        xx <- seq(xl[1], xl[2], length = length(x$data$x) * 2)
                        curves <- apply(post, 1, function(par) {
@@ -347,7 +361,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                            yy <- (1 / (1 + exp(-eta))) ^ (1 / par["mu_delta"])
                            yy * ilogit(par["mu_phi"])
                        })
-                       
+
                        ci <- 0.5 + cred.alpha / 2 * c(-1, 1)
                        qx <- apply(curves, 1, quantile, probs = ci)
                        polygon(c(xx, rev(xx)), c(qx[1, ], rev(qx[2, ])),
@@ -358,26 +372,26 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                    if (is.null(col))
                        col <- "black"
                    bsmCurve(s, col = col, lwd = lwd, lty = lty, ...)
-               } else {           
+               } else {
                    p <- c("L50", "SR", "delta", "phi")
                    resp <- p[p %in% colnames(predmat)]
 
                    expl <- colnames(predmat)[!colnames(predmat) %in% resp]
                    if (!is.null(legend.order))
                        expl <- legend.order
-                   
+
                    nr <- nrow(predmat)
-                   
+
                    LEG.LAB = character()
                    LEG.COL = character()
                    LEG.LTY = numeric()
                    LEG.LWD = numeric()
-                   
+
                    COLS <- rep(ifelse(is.null(col), "#000000", col[1]), nr)
                    if (length(expl) > 0) {
                        if (expl[1] != "null") {
                            v1 <- as.integer(as.factor(predmat[[expl[1]]]))
-                           
+
                            if (is.null(col) | length(col) < length(unique(v1))) {
                                COL <- rainbow(length(unique(v1)), start = 0/6, end = 5/6,
                                               s = 0.8, v = 0.8)
@@ -390,16 +404,16 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                            } else {
                                COL <- col
                            }
-                           
+
                            COLS <- COL[v1]
                        }
                    }
 
-                   
+
                    if (length(expl) > 1) {
                        v2 <- as.integer(as.factor(predmat[[expl[2]]]))
                        LTY <- v2
-                       
+
                        LEG.LAB <- c(LEG.LAB, paste(expl[2], "=",
                                                    levels(as.factor(predmat[[expl[2]]]))))
                        LEG.COL <- c(LEG.COL, rep("#000000", length(unique(LTY))))
@@ -408,11 +422,11 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                    } else {
                        LTY <- rep(lty[1], nr)
                    }
-                   
+
                    if (length(expl) > 2) {
                        v3 <- as.integer(as.factor(predmat[[expl[3]]]))
                        LWD <- v3
-                       
+
                        LEG.LAB <- c(LEG.LAB, paste(expl[3], "=",
                                                    levels(as.factor(predmat[[expl[3]]]))))
                        LEG.COL <- c(LEG.COL, rep("#000000", length(unique(LWD))))
@@ -421,7 +435,7 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                    } else {
                        LWD <- rep(lwd[1], nr)
                    }
-                   
+
                    for (i in 1:nr) {
                        c <- as.numeric(predmat[i, resp])
                        names(c) <- resp
@@ -432,7 +446,6 @@ plot.bsmfit <- function(x, which = "posterior", parameters = NULL,
                               bty = leg.bty, cex = leg.cex)
                }
            })
-    
+
     return(invisible(NULL))
 }
-
