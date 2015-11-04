@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>BSM: Bayesian Selectivity Modelling by tmelliott</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">BSM: Bayesian Selectivity Modelling</h1>
+      <h2 class="project-tagline">An R package for modelling the size-selectivity of fishing gear</h2>
+      <a href="https://github.com/tmelliott/bsm" class="btn">View on GitHub</a>
+      <a href="https://github.com/tmelliott/bsm/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/tmelliott/bsm/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="purpose" class="anchor" href="#purpose" aria-hidden="true"><span class="octicon octicon-link"></span></a>Purpose</h1>
+
+<p>This package was developed to assist researchers in fitting size-selectivity models to experimental trawl data. The models are fit using Bayesian models which are highly flexible and at least as useful as the traditionally used frequentist models (such as GLM's and GLMMS).</p>
+
+<h1>
+<a id="installation-and-basic-usage" class="anchor" href="#installation-and-basic-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation and basic usage</h1>
+
+<p>To install, you'll need to have make sure you can install and run <a href="https://cran.r-project.org/web/packages/R2jags/index.html"><code>R2jags</code></a>. Once you have that set up, you can install <code>BSM</code>. Here's how that's done using <a href="https://cran.r-project.org/web/packages/devtools/index.html"><code>devtools</code></a>:</p>
+
+<div class="highlight highlight-source-r"><pre><span class="pl-e">devtools</span><span class="pl-k">::</span>install_github(<span class="pl-s"><span class="pl-pds">"</span>tmelliott/bsm<span class="pl-pds">"</span></span>)</pre></div>
+
+<p>Usage is fairly straightforward, and is fairly similar to most modelling syntax.</p>
+
+<div class="highlight highlight-source-r"><pre>library(<span class="pl-smi">BSM</span>)
+<span class="pl-smi">data</span> <span class="pl-k">&lt;-</span> <span class="pl-k">data.frame</span>(<span class="pl-v">len</span> <span class="pl-k">=</span> seq(<span class="pl-c1">5</span>, <span class="pl-c1">20</span>, <span class="pl-v">by</span> <span class="pl-k">=</span> <span class="pl-c1">1</span>),
+                   <span class="pl-v">y</span>   <span class="pl-k">=</span> c(<span class="pl-c1">0</span>, <span class="pl-c1">1</span>, <span class="pl-c1">1</span>, <span class="pl-c1">0</span>, <span class="pl-c1">4</span>, <span class="pl-c1">6</span>, <span class="pl-c1">15</span>, <span class="pl-c1">23</span>, <span class="pl-c1">26</span>, <span class="pl-c1">38</span>, <span class="pl-c1">38</span>, <span class="pl-c1">28</span>, <span class="pl-c1">59</span>, <span class="pl-c1">37</span>, <span class="pl-c1">24</span>, <span class="pl-c1">13</span>),
+                   <span class="pl-v">n</span>   <span class="pl-k">=</span> c(<span class="pl-c1">3</span>, <span class="pl-c1">5</span>, <span class="pl-c1">8</span>, <span class="pl-c1">12</span>, <span class="pl-c1">19</span>, <span class="pl-c1">15</span>, <span class="pl-c1">20</span>, <span class="pl-c1">26</span>, <span class="pl-c1">29</span>, <span class="pl-c1">40</span>, <span class="pl-c1">39</span>, <span class="pl-c1">28</span>, <span class="pl-c1">59</span>, <span class="pl-c1">37</span>, <span class="pl-c1">24</span>, <span class="pl-c1">13</span>))
+
+<span class="pl-c">## Define a data object and plot it:</span>
+<span class="pl-smi">dat</span> <span class="pl-k">&lt;-</span> bsmData(<span class="pl-v">y1</span> <span class="pl-k">=</span> <span class="pl-smi">y</span>, <span class="pl-v">n</span> <span class="pl-k">=</span> <span class="pl-smi">n</span>, <span class="pl-v">length</span> <span class="pl-k">=</span> <span class="pl-smi">len</span>, <span class="pl-v">data</span> <span class="pl-k">=</span> <span class="pl-smi">data</span>)
+plot(<span class="pl-smi">dat</span>)
+
+<span class="pl-c">## Fit a selectivity model:</span>
+<span class="pl-smi">fit</span> <span class="pl-k">&lt;-</span> bsm(<span class="pl-smi">dat</span>)
+summary(<span class="pl-smi">fit</span>)</pre></div>
+
+<p>The best resource is currently Chapter 7 of my <a href="http://tomelliott.co.nz/assets/docs/tomelliott-masters.pdf">Masters Thesis</a>, or else you can read up on the various arguments to the main functions,</p>
+
+<div class="highlight highlight-source-r"><pre>?<span class="pl-smi">bsmData</span>
+?<span class="pl-smi">bsm</span></pre></div>
+
+<h1>
+<a id="to-do" class="anchor" href="#to-do" aria-hidden="true"><span class="octicon octicon-link"></span></a>To do</h1>
+
+<ul>
+<li>fix up implementation of factors to enable easy "no intercept" model for various parameters, <code>L50 ~ mesh + haul - 1</code>
+</li>
+</ul>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/tmelliott/bsm">BSM: Bayesian Selectivity Modelling</a> is maintained by <a href="https://github.com/tmelliott">tmelliott</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-69706031-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
